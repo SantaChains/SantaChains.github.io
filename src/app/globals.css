@@ -1,0 +1,926 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Google Fonts - Caveat (标题) 和 Quicksand (正文)
+ * 注意：字体通过 Next.js 字体优化在 layout.tsx 中加载 */
+
+@custom-variant dark (&:is(.dark *));
+
+/* 字体定义 - 使用本地已有字体 */
+@font-face {
+  font-family: 'Arima-Regular';
+  src: url('/fonts/Arima-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'LXGWWenKaiMono';
+  src: url('/fonts/LXGWWenKaiMono.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'WenQuanWeiMiHei';
+  src: url('/fonts/WenQuanWeiMiHei.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CangErJinKai03';
+  src: url('/fonts/CangErJinKai03.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'Quicksand', 'Arima-Regular', 'LXGWWenKaiMono', 'WenQuanWeiMiHei', 'CangErJinKai03', system-ui, sans-serif;
+  --font-mono: 'LXGWWenKaiMono', ui-monospace, monospace;
+  --font-heading: 'Caveat', 'Arima-Regular', cursive;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* 川端康成文学色彩 - CSS 变量扩展 */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-dark: var(--bg-dark);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-accent-red: var(--accent-red);
+  --color-accent-green: var(--accent-green);
+  --color-accent-purple: var(--accent-purple);
+  --color-paper-warm: var(--paper-warm);
+  --color-ink-wash: var(--ink-wash);
+}
+
+/* ============================================
+   川端康成文学色彩系统
+   ============================================ */
+
+:root {
+  --radius: 0.75rem;
+
+  /* 基础配色 */
+  --background: #F5F5F0;
+  --foreground: #2C2C2C;
+  --card: #F7F3E9;
+  --card-foreground: #2C2C2C;
+  --popover: #F7F3E9;
+  --popover-foreground: #2C2C2C;
+  --primary: #B85450;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F5F5F0;
+  --secondary-foreground: #6B6B6B;
+  --muted: #F7F3E9;
+  --muted-foreground: #8B8680;
+  --accent: #5B7B5B;
+  --accent-foreground: #FFFFFF;
+  --destructive: #B85450;
+  --border: #E8E4DA;
+  --input: #E8E4DA;
+  --ring: #B85450;
+  --chart-1: #B85450;
+  --chart-2: #5B7B5B;
+  --chart-3: #7B6B8B;
+  --chart-4: #8B8680;
+  --chart-5: #E8E4DA;
+  --sidebar: #F7F3E9;
+  --sidebar-foreground: #2C2C2C;
+  --sidebar-primary: #B85450;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #5B7B5B;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #E8E4DA;
+  --sidebar-ring: #B85450;
+
+  /* 川端康成专属色彩 */
+  --bg-primary: #F5F5F0;
+  --bg-dark: #1A1A1A;
+  --text-primary: #2C2C2C;
+  --text-secondary: #6B6B6B;
+  --accent-red: #B85450;
+  --accent-green: #5B7B5B;
+  --accent-purple: #7B6B8B;
+  --paper-warm: #F7F3E9;
+  --ink-wash: #8B8680;
+}
+
+.dark {
+  /* 深色模式 - 隧道黑为基底 */
+  --background: #1A1A1A;
+  --foreground: #F5F5F0;
+  --card: #2C2C2C;
+  --card-foreground: #F5F5F0;
+  --popover: #2C2C2C;
+  --popover-foreground: #F5F5F0;
+  --primary: #C96460;
+  --primary-foreground: #FFFFFF;
+  --secondary: #2C2C2C;
+  --secondary-foreground: #8B8680;
+  --muted: #2C2C2C;
+  --muted-foreground: #8B8680;
+  --accent: #6B8B6B;
+  --accent-foreground: #FFFFFF;
+  --destructive: #C96460;
+  --border: #3D3D3D;
+  --input: #3D3D3D;
+  --ring: #C96460;
+  --chart-1: #C96460;
+  --chart-2: #6B8B6B;
+  --chart-3: #8B7B9B;
+  --chart-4: #8B8680;
+  --chart-5: #3D3D3D;
+  --sidebar: #2C2C2C;
+  --sidebar-foreground: #F5F5F0;
+  --sidebar-primary: #C96460;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #6B8B6B;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #3D3D3D;
+  --sidebar-ring: #C96460;
+
+  /* 川端康成专属色彩 - 深色模式 */
+  --bg-primary: #1A1A1A;
+  --bg-dark: #0F0F0F;
+  --text-primary: #F5F5F0;
+  --text-secondary: #8B8680;
+  --accent-red: #C96460;
+  --accent-green: #6B8B6B;
+  --accent-purple: #8B7B9B;
+  --paper-warm: #2C2C2C;
+  --ink-wash: #6B6B6B;
+}
+
+/* 系统级深色模式偏好 */
+@media (prefers-color-scheme: dark) {
+  html:not(.light) {
+    color-scheme: dark;
+  }
+
+  html:not(.light) body {
+    background-color: #1A1A1A;
+    color: #F5F5F0;
+  }
+}
+
+/* 平滑过渡动画 */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Quicksand', 'Arima-Regular', 'LXGWWenKaiMono', 'WenQuanWeiMiHei', 'CangErJinKai03', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* 标题字体 */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Caveat', 'Arima-Regular', cursive;
+    font-weight: 600;
+  }
+}
+
+/* ============================================
+   高性能动画基础类
+   ============================================ */
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform;
+}
+
+.gpu-accelerated-content {
+  contain: layout style;
+}
+
+/* ============================================
+   Pretext 排版优化样式
+   ============================================ */
+
+.pretext-content {
+  font-family: 'Quicksand', 'Arima-Regular', 'LXGWWenKaiMono', 'WenQuanWeiMiHei', 'CangErJinKai03', serif;
+  color: var(--text-primary);
+  text-align: justify;
+  hyphens: auto;
+  overflow-wrap: break-word;
+  word-break: normal;
+  line-break: auto;
+}
+
+.pretext-line {
+  margin-bottom: 0;
+  text-align: justify;
+  text-indent: 2em;
+}
+
+.pretext-first-line {
+  text-indent: 0;
+}
+
+.pretext-drop-cap {
+  float: left;
+  font-size: 3.2em;
+  line-height: 0.9;
+  margin-right: 0.08em;
+  margin-top: 0.05em;
+  font-family: 'Caveat', 'CangErJinKai03', serif;
+  color: var(--accent-red);
+  font-weight: 600;
+}
+
+.pretext-loading {
+  padding: 1rem 0;
+}
+
+/* 虚拟滚动容器 */
+.virtualized-container {
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.virtualized-spacer {
+  position: relative;
+}
+
+.virtualized-content {
+  will-change: transform;
+}
+
+.virtualized-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 图文混排样式 */
+.pretext-mixed-layout {
+  position: relative;
+  min-height: 100px;
+}
+
+.pretext-mixed-image {
+  margin: 0;
+}
+
+.pretext-mixed-image.float-left {
+  margin-right: 20px;
+  margin-bottom: 20px;
+}
+
+.pretext-mixed-image.float-right {
+  margin-left: 20px;
+  margin-bottom: 20px;
+}
+
+.pretext-mixed-text {
+  text-align: justify;
+}
+
+.pretext-mixed-line {
+  text-indent: 2em;
+}
+
+.pretext-mixed-line:first-child {
+  text-indent: 0;
+}
+
+/* 文章包装器 */
+.pretext-article-wrapper {
+  position: relative;
+}
+
+/* ============================================
+   目录导航样式
+   ============================================ */
+
+.toc-nav {
+  position: relative;
+}
+
+.toc-nav button {
+  width: 100%;
+  padding: 0.25rem 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toc-nav button:hover {
+  color: var(--accent-red);
+}
+
+/* ============================================
+   原有文章排版样式 (保留兼容)
+   ============================================ */
+
+.pretext-article {
+  font-family: 'Quicksand', 'Arima-Regular', 'LXGWWenKaiMono', 'WenQuanWeiMiHei', 'CangErJinKai03', serif;
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  text-align: justify;
+  hyphens: auto;
+}
+
+.pretext-article .pretext-line {
+  margin-bottom: 0.5em;
+  text-indent: 2em;
+}
+
+.pretext-article .pretext-line:first-child {
+  text-indent: 0;
+}
+
+.pretext-article .pretext-line:first-child::first-letter {
+  float: left;
+  font-size: 3.2em;
+  line-height: 0.9;
+  margin-right: 0.08em;
+  margin-top: 0.05em;
+  font-family: 'Caveat', 'CangErJinKai03', serif;
+  color: var(--accent-red);
+}
+
+/* 文章正文样式 */
+.prose {
+  line-height: 1.8;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  font-family: 'Caveat', 'Arima-Regular', 'LXGWWenKaiMono', 'WenQuanWeiMiHei', 'CangErJinKai03', serif;
+  font-weight: 700;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  scroll-margin-top: 100px;
+}
+
+.prose p {
+  margin-bottom: 1.5em;
+  text-align: justify;
+}
+
+.prose code {
+  font-family: 'LXGWWenKaiMono', ui-monospace, monospace;
+  background: var(--paper-warm);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
+}
+
+.prose pre {
+  background: var(--bg-dark);
+  color: var(--bg-primary);
+  padding: 1.5em;
+  border-radius: 0.75em;
+  overflow-x: auto;
+  margin: 1.5em 0;
+}
+
+.prose pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--accent-red);
+  padding-left: 1.5em;
+  margin: 1.5em 0;
+  color: var(--ink-wash);
+  font-style: italic;
+}
+
+.prose img {
+  border-radius: 0.75em;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================
+   Markdown 内容样式
+   ============================================ */
+
+.article-content {
+  font-family: 'Quicksand', 'Arima-Regular', 'LXGWWenKaiMono', 'WenQuanWeiMiHei', 'CangErJinKai03', serif;
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  font-family: 'Caveat', 'Arima-Regular', 'LXGWWenKaiMono', 'WenQuanWeiMiHei', 'CangErJinKai03', serif;
+  font-weight: 600;
+  margin-top: 1.8em;
+  margin-bottom: 0.8em;
+  color: var(--text-primary);
+  scroll-margin-top: 100px;
+}
+
+.markdown-content h1 {
+  font-size: 2em;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0.3em;
+}
+
+.markdown-content h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3em;
+}
+
+.markdown-content h3 {
+  font-size: 1.25em;
+}
+
+.markdown-content h4 {
+  font-size: 1.1em;
+}
+
+.markdown-content p {
+  margin-bottom: 1.2em;
+  text-align: justify;
+  text-indent: 2em;
+}
+
+.markdown-content p:first-of-type {
+  text-indent: 0;
+}
+
+.markdown-content p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.2em;
+  line-height: 0.9;
+  margin-right: 0.08em;
+  margin-top: 0.05em;
+  font-family: 'Caveat', 'CangErJinKai03', serif;
+  color: var(--accent-red);
+}
+
+.markdown-content .inline-code {
+  font-family: 'LXGWWenKaiMono', ui-monospace, monospace;
+  background: var(--paper-warm);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-size: 0.9em;
+  color: var(--accent-red);
+}
+
+.markdown-content .code-block {
+  background: var(--bg-dark);
+  color: var(--bg-primary);
+  padding: 1.5em;
+  border-radius: 0.75em;
+  overflow-x: auto;
+  margin: 1.5em 0;
+  font-family: 'LXGWWenKaiMono', ui-monospace, monospace;
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+.markdown-content .code-block code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.markdown-content blockquote {
+  border-left: 4px solid var(--accent-red);
+  padding-left: 1.5em;
+  margin: 1.5em 0;
+  color: var(--ink-wash);
+  font-style: italic;
+}
+
+.markdown-content .markdown-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75em;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin: 1.5em 0;
+  display: block;
+}
+
+.markdown-content .markdown-link {
+  color: var(--accent-red);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+  transition: border-color 0.2s ease;
+}
+
+.markdown-content .markdown-link:hover {
+  border-bottom-color: var(--accent-red);
+}
+
+.markdown-content strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.markdown-content em {
+  font-style: italic;
+  color: var(--ink-wash);
+}
+
+.markdown-content del {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.markdown-content .unordered-list,
+.markdown-content .ordered-list,
+.markdown-content .task-list {
+  margin: 1.2em 0;
+  padding-left: 2em;
+}
+
+.markdown-content .unordered-list {
+  list-style-type: disc;
+}
+
+.markdown-content .ordered-list {
+  list-style-type: decimal;
+}
+
+.markdown-content .task-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.markdown-content .list-item {
+  margin-bottom: 0.5em;
+  text-align: justify;
+}
+
+/* 任务列表样式 */
+.markdown-content .task-list-item {
+  list-style: none;
+  margin-bottom: 0.5em;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+
+.markdown-content .task-list-item input[type="checkbox"] {
+  margin-top: 0.3em;
+  width: 1em;
+  height: 1em;
+  accent-color: var(--accent-red);
+  cursor: default;
+}
+
+.markdown-content .divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2em 0;
+}
+
+/* Markdown 表格样式 */
+.markdown-content .table-wrapper {
+  overflow-x: auto;
+  margin: 1.5em 0;
+  border-radius: 0.5em;
+  border: 1px solid var(--border);
+}
+
+.markdown-content .markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+  background: var(--paper-warm);
+}
+
+.markdown-content .markdown-table thead {
+  background: var(--paper-warm);
+}
+
+.markdown-content .markdown-table th {
+  padding: 0.75em 1em;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border);
+  text-align: left;
+}
+
+.markdown-content .markdown-table td {
+  padding: 0.6em 1em;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.markdown-content .markdown-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.markdown-content .markdown-table tbody tr:hover {
+  background: var(--bg-primary);
+}
+
+/* ============================================
+   动画关键帧
+   ============================================ */
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ============================================
+   动画类
+   ============================================ */
+
+.animate-pulse-slow {
+  animation: pulse-slow 6s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--accent-red) 0%,
+    var(--accent-purple) 50%,
+    var(--accent-red) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   深色模式覆盖样式 - 川端康成风格
+   ============================================ */
+
+/* 深色模式下的 Markdown 内容 */
+.dark .article-content {
+  color: var(--text-primary);
+}
+
+.dark .markdown-content h1,
+.dark .markdown-content h2,
+.dark .markdown-content h3,
+.dark .markdown-content h4,
+.dark .markdown-content h5,
+.dark .markdown-content h6 {
+  color: var(--text-primary);
+}
+
+.dark .markdown-content h1 {
+  border-bottom-color: var(--border);
+}
+
+.dark .markdown-content h2 {
+  border-bottom-color: var(--border);
+}
+
+.dark .markdown-content p:first-of-type::first-letter {
+  color: var(--accent-red);
+}
+
+.dark .markdown-content .inline-code {
+  background: var(--paper-warm);
+  color: var(--accent-red);
+}
+
+.dark .markdown-content .code-block {
+  background: var(--bg-dark);
+  color: var(--bg-primary);
+}
+
+.dark .markdown-content blockquote {
+  border-left-color: var(--accent-red);
+  color: var(--ink-wash);
+}
+
+.dark .markdown-content .markdown-image {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.dark .markdown-content .markdown-link {
+  color: var(--accent-red);
+  border-bottom-color: var(--border);
+}
+
+.dark .markdown-content .markdown-link:hover {
+  border-bottom-color: var(--accent-red);
+}
+
+.dark .markdown-content strong {
+  color: var(--text-primary);
+}
+
+.dark .markdown-content em {
+  color: var(--ink-wash);
+}
+
+.dark .markdown-content del {
+  color: var(--text-secondary);
+}
+
+.dark .markdown-content .task-list-item input[type="checkbox"] {
+  accent-color: var(--accent-red);
+}
+
+.dark .markdown-content .divider {
+  border-top-color: var(--border);
+}
+
+/* 深色模式下的表格 */
+.dark .markdown-content .table-wrapper {
+  border-color: var(--border);
+}
+
+.dark .markdown-content .markdown-table {
+  background: var(--paper-warm);
+}
+
+.dark .markdown-content .markdown-table thead {
+  background: var(--paper-warm);
+}
+
+.dark .markdown-content .markdown-table th {
+  color: var(--text-primary);
+  border-bottom-color: var(--border);
+}
+
+.dark .markdown-content .markdown-table td {
+  border-bottom-color: var(--border);
+  color: var(--text-primary);
+}
+
+.dark .markdown-content .markdown-table tbody tr:hover {
+  background: var(--bg-primary);
+}
+
+/* 深色模式下的 Pretext 样式 */
+.dark .pretext-content {
+  color: var(--text-primary);
+}
+
+.dark .pretext-drop-cap {
+  color: var(--accent-red);
+}
+
+.dark .pretext-article {
+  color: var(--text-primary);
+}
+
+.dark .pretext-article .pretext-line:first-child::first-letter {
+  color: var(--accent-red);
+}
+
+/* 深色模式下的 Prose 样式 */
+.dark .prose code {
+  background: var(--paper-warm);
+}
+
+.dark .prose pre {
+  background: var(--bg-dark);
+  color: var(--bg-primary);
+}
+
+.dark .prose blockquote {
+  border-left-color: var(--accent-red);
+  color: var(--ink-wash);
+}
+
+.dark .prose img {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* 深色模式下的目录导航 */
+.dark .toc-nav button:hover {
+  color: var(--accent-red);
+}
+
+/* 深色模式下的 text-gradient */
+.dark .text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--accent-red) 0%,
+    var(--accent-purple) 50%,
+    var(--accent-red) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   性能优化
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+.animate-pulse-slow,
+.text-gradient {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* 减少重绘区域 */
+.pretext-content,
+.pretext-mixed-layout {
+  contain: layout style paint;
+}
+
+/* 虚拟滚动优化 */
+.virtualized-container {
+  contain: strict;
+}
+
+/* 字体平滑 */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 无障碍：减少动画 */
+@media (prefers-reduced-motion: reduce) {
+  .gpu-accelerated,
+  .gpu-accelerated-content,
+  .animate-pulse-slow,
+  .text-gradient {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
