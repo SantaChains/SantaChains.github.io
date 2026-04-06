@@ -15,6 +15,17 @@ interface TableOfContentsProps {
 }
 
 /**
+ * 生成标题 ID (与 markdownService.slugify 逻辑一致)
+ */
+function slugify(text: string): string {
+  return text
+    .replace(/[^\w\s\u4e00-\u9fa5\u3040-\u309f\u30a0-\u30ff-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/**
  * 目录导航组件
  * 
  * 功能:
@@ -34,13 +45,13 @@ export function TableOfContents({ content, className = '' }: TableOfContentsProp
     const idCount = new Map<string, number>();
     
     lines.forEach((line) => {
-      const match = line.match(/^(#{1,3})\s+(.+)$/);
+      const match = line.match(/^(#{1,6})\s+(.+)$/);
       if (match) {
         const level = match[1].length;
         const text = match[2].trim();
         
-        // 生成 id，处理空值情况
-        let baseId = text.toLowerCase().replace(/[^\w\s\u4e00-\u9fa5-]/g, '').replace(/\s+/g, '-');
+        // 生成 id (与 markdownService.slugify 一致)
+        let baseId = slugify(text);
         
         // 如果 id 为空，使用默认 id
         if (!baseId) {

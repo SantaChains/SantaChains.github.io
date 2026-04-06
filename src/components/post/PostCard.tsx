@@ -16,10 +16,7 @@ interface PostCardProps {
   post: PostMeta;
 }
 
-/**
- * 格式化日期
- */
-function formatDate(dateString: string): string {
+function formatCardDate(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
@@ -28,23 +25,18 @@ function formatDate(dateString: string): string {
   });
 }
 
-/**
- * 获取 Web 可用的 banner 路径
- */
-function getWebBannerPath(bannerPath: string | undefined): string | undefined {
+function getCardBannerPath(bannerPath: string | undefined): string | undefined {
   if (!bannerPath) return undefined;
   if (bannerPath.startsWith('/')) return bannerPath;
   return `/posts/${bannerPath}`;
 }
 
 export function PostCard({ post }: PostCardProps) {
-  // 转换 banner 路径为 Web 可用路径
-  const webBannerPath = post.banner ? getWebBannerPath(post.banner) : undefined;
+  const webBannerPath = getCardBannerPath(post.banner);
 
   return (
     <Link href={`/posts/${post.slug}`}>
       <Card className="group cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-primary/20 border-0 bg-card/80 backdrop-blur-sm h-full">
-        {/* 封面图 */}
         {webBannerPath && (
           <div className="relative h-48 overflow-hidden rounded-t-lg">
             <OptimizedImage
@@ -65,7 +57,7 @@ export function PostCard({ post }: PostCardProps) {
               {post.category}
             </Badge>
             <span className="text-xs text-muted-foreground">
-              {formatDate(post.date)}
+              {formatCardDate(post.date)}
             </span>
           </div>
           <CardTitle className="text-lg text-gradient group-hover:text-primary transition-colors">
@@ -78,7 +70,6 @@ export function PostCard({ post }: PostCardProps) {
             {post.excerpt}
           </p>
 
-          {/* 标签 */}
           <div className="flex flex-wrap gap-1">
             {post.tags.slice(0, 3).map((tag) => (
               <Badge key={tag} variant="outline" className="text-xs">

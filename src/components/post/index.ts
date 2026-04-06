@@ -7,6 +7,9 @@ export { PretextArticle } from './PretextArticle';
 export { MarkdownContent } from './MarkdownContent';
 export { PretextPerformanceMonitor } from './PretextPerformanceMonitor';
 export { TableOfContents } from './TableOfContents';
+export { CodeBlock } from './CodeBlock';
+export { PostCard } from './PostCard';
+export { ReadingProgress, CircularReadingProgress } from './ReadingProgress';
 
 // 类型统一从 types/pretext 导出
 export type {

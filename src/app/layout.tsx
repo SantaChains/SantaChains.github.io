@@ -26,6 +26,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        {/* 预加载关键字体文件 */}
+        <link rel="preload" href="/fonts/Arima-Regular.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/LXGWWenKaiMono.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <ThemeProvider defaultTheme="system" storageKey="santachains-theme">

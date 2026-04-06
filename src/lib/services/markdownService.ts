@@ -14,7 +14,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkHtml from 'remark-html';
 import remarkGfm from 'remark-gfm';
-import type { Post, PostMeta } from '@/lib/data/types';
+import type { PostMeta } from '@/lib/data/types';
 import { processContentImages } from '@/lib/data/posts';
 
 // ============================================
@@ -81,24 +81,28 @@ export function parseWikiLinks(content: string): WikiLink[] {
  * @returns 转换后的内容
  */
 export function transformWikiLinksToHtml(content: string, posts: PostMeta[]): string {
-  // 创建 slug 集合用于快速查找
   const slugSet = new Set(posts.map(post => post.slug));
-  const titleToSlug = new Map(posts.map(post => [post.title, post.slug]));
+  const titleToSlug = new Map(posts.map(post => [slugify(post.title), post.slug]));
 
   return content.replace(WIKI_LINK_REGEX, (match, filename, display) => {
-    const linkText = display?.trim() || filename.trim();
-    const targetSlug = filename.trim().replace(/\.md$/, '');
+    const linkText = escapeHtml(display?.trim() || filename.trim());
+    const targetSlug = slugify(filename.trim().replace(/\.md$/, ''));
 
-    // 检查目标文章是否存在（通过 slug 或标题）
-    const exists = slugSet.has(targetSlug) ||
-      (titleToSlug.has(filename.trim()) && slugSet.has(titleToSlug.get(filename.trim())!));
+    let finalSlug: string | undefined = titleToSlug.get(targetSlug);
+    let exists = false;
 
-    if (exists) {
-      return `<a href="/posts/${targetSlug}" class="wikilink">${linkText}</a>`;
+    if (finalSlug) {
+      exists = true;
+    } else if (slugSet.has(targetSlug)) {
+      finalSlug = targetSlug;
+      exists = true;
     }
 
-    // 文章不存在，添加缺失标记
-    return `<a href="/posts/${targetSlug}" class="wikilink wikilink-missing">${linkText}</a>`;
+    if (exists && finalSlug) {
+      return `<a href="/posts/${escapeHtml(finalSlug)}" class="wikilink">${linkText}</a>`;
+    }
+
+    return `<a href="/posts/${escapeHtml(targetSlug)}" class="wikilink wikilink-missing">${linkText}</a>`;
   });
 }
 
@@ -111,19 +115,18 @@ export function transformWikiLinksToHtml(content: string, posts: PostMeta[]): st
 export function processObsidianLinks(content: string, posts: PostMeta[]): string {
   const titleToSlug = new Map<string, string>();
   posts.forEach(post => {
-    titleToSlug.set(post.title, post.slug);
+    titleToSlug.set(slugify(post.title), post.slug);
     titleToSlug.set(post.slug, post.slug);
   });
 
   return content.replace(WIKI_LINK_REGEX, (match, link, display) => {
-    const linkText = display || link;
-    const slug = titleToSlug.get(link) || titleToSlug.get(link.replace(/\.md$/, ''));
+    const linkText = escapeHtml(display || link);
+    const slug = titleToSlug.get(slugify(link)) || titleToSlug.get(slugify(link.replace(/\.md$/, '')));
 
     if (slug) {
-      return `[${linkText}](/posts/${slug})`;
+      return `[${linkText}](/posts/${escapeHtml(slug)})`;
     }
 
-    // 如果没找到对应文章，保留原文本但不创建链接
     return linkText;
   });
 }
@@ -176,75 +179,99 @@ export async function markdownToHtml(
 export function processMarkdown(content: string): string {
   let html = content;
 
-  // 处理代码块
+  // 处理代码块 - 添加复制按钮容器
   html = html.replace(
     /```(\w+)?\n([\s\S]*?)```/g,
-    '<pre class="code-block"><code>$2</code></pre>'
+    (match, language, code) => {
+      const trimmedCode = code.trim();
+      const lang = language ? escapeHtml(language) : '';
+      const escapedCode = escapeHtml(trimmedCode);
+      const langLabel = lang ? `<div class="code-language">${lang}</div>` : '';
+      const codeDataAttr = globalThis.btoa?.(unescape(encodeURIComponent(trimmedCode))) || encodeURIComponent(trimmedCode);
+      return `<div class="code-block-wrapper">${langLabel}<pre class="code-block"><code>${escapedCode}</code></pre><button class="code-copy-btn" data-code="${codeDataAttr}" data-original="${encodeURIComponent(trimmedCode)}" title="复制代码"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></div>`;
+    }
   );
 
   // 处理行内代码
   html = html.replace(
     /`([^`]+)`/g,
-    '<code class="inline-code">$1</code>'
+    (_, code) => `<code class="inline-code">${escapeHtml(code)}</code>`
   );
 
-  // 处理标题
-  html = html.replace(/^###### (.*$)/gim, '<h6>$1</h6>');
-  html = html.replace(/^##### (.*$)/gim, '<h5>$1</h5>');
-  html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
-  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+  // 处理删除线 (优先处理，避免与其他语法冲突)
+  html = html.replace(/~~(.*?)~~/g, (_, text) => `<del>${escapeHtml(text)}</del>`);
 
-  // 处理粗体
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+  // 处理高亮 (Obsidian 语法 ==text==)
+  html = html.replace(/==(.*?)==/g, (_, text) => `<mark class="highlight">${escapeHtml(text)}</mark>`);
 
-  // 处理斜体
-  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-  html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+  // 处理粗体和斜体 (嵌套处理：先处理内层斜体，再处理外层粗体)
+  html = html.replace(/\*\*\*(.*?)\*\*\*/g, (_, text) => `<strong><em>${escapeHtml(text)}</em></strong>`);
+  html = html.replace(/___(.*?)___/g, (_, text) => `<strong><em>${escapeHtml(text)}</em></strong>`);
+  html = html.replace(/\*\*(.*?)\*\*/g, (_, text) => `<strong>${escapeHtml(text)}</strong>`);
+  html = html.replace(/__(.*?)__/g, (_, text) => `<strong>${escapeHtml(text)}</strong>`);
+  html = html.replace(/\*(.*?)\*/g, (_, text) => `<em>${escapeHtml(text)}</em>`);
+  html = html.replace(/_(.*?)_/g, (_, text) => `<em>${escapeHtml(text)}</em>`);
 
-  // 处理删除线
-  html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+  // 处理标题 (添加 id 属性用于 TOC 跳转，与 TOC 组件的 slug 生成逻辑一致)
+  // 使用单个处理函数共享计数器以处理重复 ID
+  let headingIndex = 0;
+  const headingIdCounts = new Map<string, number>();
+
+  html = html.replace(/^(#{1,6})\s+(.+)$/gim, (_, hashes, text) => {
+    const level = hashes.length;
+    const trimmedText = text.trim();
+    let baseId = slugify(trimmedText);
+
+    if (!baseId) {
+      baseId = `heading-${headingIndex}`;
+      headingIndex++;
+    }
+
+    const count = headingIdCounts.get(baseId) || 0;
+    const id = count > 0 ? `${baseId}-${count}` : baseId;
+    headingIdCounts.set(baseId, count + 1);
+
+    return `<h${level} id="${escapeHtml(id)}">${escapeHtml(trimmedText)}</h${level}>`;
+  });
 
   // 处理图片（预处理过的路径）
   html = html.replace(
     /!\[([^\]]*)\]\(([^)]+)\)/g,
-    '<img src="$2" alt="$1" class="markdown-image" loading="lazy" />'
+    (_, alt, src) => `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" class="markdown-image" loading="lazy" />`
   );
 
   // 处理链接
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" class="markdown-link" target="_blank" rel="noopener noreferrer">$1</a>'
+    (_, text, href) => `<a href="${escapeHtml(href)}" class="markdown-link" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`
   );
 
-  // 处理引用块
+  // 处理引用块 (支持 > text 和 >text 两种格式)
   html = html.replace(
-    /^> (.*$)/gim,
-    '<blockquote>$1</blockquote>'
+    /^&gt;\s?(.*$)/gim,
+    (_, text) => `<blockquote>${escapeHtml(text)}</blockquote>`
   );
 
   // 处理任务列表
   html = html.replace(
     /^\s*[-*+] \[x\] (.*$)/gim,
-    '<li class="task-list-item"><input type="checkbox" checked disabled /> $1</li>'
+    (_, text) => `<li class="task-list-item"><input type="checkbox" checked disabled /> ${escapeHtml(text)}</li>`
   );
   html = html.replace(
     /^\s*[-*+] \[ \] (.*$)/gim,
-    '<li class="task-list-item"><input type="checkbox" disabled /> $1</li>'
+    (_, text) => `<li class="task-list-item"><input type="checkbox" disabled /> ${escapeHtml(text)}</li>`
   );
 
   // 处理无序列表
   html = html.replace(
     /^\s*[-*+] (.*$)/gim,
-    '<li class="list-item">$1</li>'
+    (_, text) => `<li class="list-item">${escapeHtml(text)}</li>`
   );
 
   // 处理有序列表
   html = html.replace(
     /^\s*\d+\. (.*$)/gim,
-    '<li class="list-item ordered">$1</li>'
+    (_, text) => `<li class="list-item ordered">${escapeHtml(text)}</li>`
   );
 
   // 处理水平分割线
@@ -415,6 +442,23 @@ function escapeHtml(text: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+/**
+ * 统一的 Slug 生成函数 (用于 WikiLink 和标题 ID)
+ * 规则：
+ * - 保留原始大小写
+ * - 移除非字母数字、中文、日文、连字符的字符
+ * - 空格替换为 -
+ * - 多个 - 合并为 1 个
+ * - 去除首尾 -
+ */
+function slugify(text: string): string {
+  return text
+    .replace(/[^\w\s\u4e00-\u9fa5\u3040-\u309f\u30a0-\u30ff-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 // ============================================

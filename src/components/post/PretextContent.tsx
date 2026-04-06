@@ -37,7 +37,6 @@ export function PretextContent({
   className = '',
   fontSize = DEFAULT_FONT_CONFIG.size,
   lineHeight = DEFAULT_FONT_CONFIG.lineHeight,
-  enableDropCap = true,
   enableOptimization = true,
   onLayoutComplete,
   onMetricsUpdate,
@@ -65,25 +64,21 @@ export function PretextContent({
 
   // 清理所有副作用
   const cleanup = useCallback(() => {
-    // 取消 AbortController
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
 
-    // 取消 RAF
     if (rafIdRef.current !== null) {
       cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = null;
     }
 
-    // 断开 ResizeObserver
     if (resizeObserverRef.current) {
       resizeObserverRef.current.disconnect();
       resizeObserverRef.current = null;
     }
 
-    // 清除防抖定时器
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = null;
@@ -136,10 +131,8 @@ export function PretextContent({
     let layoutLines: LayoutLine[];
 
     if (optimizerRef.current && enableOptimization) {
-      // 使用优化器
       layoutLines = optimizerRef.current.layout(content, fontString, width, lineHeight);
 
-      // 更新性能指标
       if (onMetricsUpdate) {
         const metrics = optimizerRef.current.getMetrics();
         const stats = optimizerRef.current.getCacheStats();
@@ -149,7 +142,6 @@ export function PretextContent({
         });
       }
     } else {
-      // 降级：直接调用 Pretext
       const prepared = prepareWithSegments(content, fontString, { whiteSpace: 'normal' });
       const result = layoutWithLines(prepared, width, lineHeight);
       layoutLines = result.lines;
@@ -157,14 +149,13 @@ export function PretextContent({
 
     const renderTime = performance.now() - startTime;
 
-    // 大数据量分片渲染
     if (layoutLines.length > 100) {
       renderInChunks(layoutLines, renderTime);
     } else {
-      const renderLines: LineRenderInfo[] = layoutLines.map((line, index) => ({
+      const renderLines: LineRenderInfo[] = layoutLines.map((line) => ({
         text: line.text,
         width: line.width,
-        isFirstLine: index === 0,
+        isFirstLine: false,
       }));
       setLines(renderLines);
       setIsReady(true);
@@ -183,13 +174,10 @@ export function PretextContent({
   useEffect(() => {
     if (!fontsLoaded || !containerRef.current) return;
 
-    // 清理之前的副作用
     cleanup();
 
-    // 创建新的 AbortController
     abortControllerRef.current = new AbortController();
 
-    // 使用 RAF 确保 DOM 已更新
     rafIdRef.current = requestAnimationFrame(() => {
       if (containerRef.current && !abortControllerRef.current?.signal.aborted) {
         performLayout(containerRef.current.clientWidth);
@@ -217,7 +205,7 @@ export function PretextContent({
         if (entry && !abortControllerRef.current?.signal.aborted) {
           performLayout(entry.contentRect.width);
         }
-      }, 100); // 100ms 防抖
+      }, 100);
     };
 
     if ('ResizeObserver' in window) {
@@ -236,22 +224,6 @@ export function PretextContent({
       }
     };
   }, [isReady, performLayout]);
-
-  // 首字下沉样式
-  const dropCapStyles = useMemo(() => {
-    if (!enableDropCap || lines.length === 0) return null;
-
-    const firstLine = lines[0];
-    if (!firstLine?.text) return null;
-
-    const firstChar = firstLine.text.charAt(0);
-    if (!firstChar || firstChar === ' ') return null;
-
-    return {
-      firstChar,
-      remainingText: firstLine.text.slice(1),
-    };
-  }, [enableDropCap, lines]);
 
   // 加载状态
   if (isLoading || !fontsLoaded) {
@@ -284,7 +256,6 @@ export function PretextContent({
         contain: 'layout style paint',
       }}
     >
-      {/* 渲染进度条（大数据量时显示） */}
       {renderProgress < 100 && lines.length > 100 && (
         <div className="fixed top-0 left-0 right-0 h-1 bg-primary/20 z-50">
           <div
@@ -294,32 +265,21 @@ export function PretextContent({
         </div>
       )}
 
-      {lines.map((line, index) => {
-        const isFirstLine = index === 0 && dropCapStyles;
-
-        return (
-          <div
-            key={index}
-            className={`pretext-line ${isFirstLine ? 'pretext-first-line' : ''}`}
-            style={{
-              lineHeight: `${lineHeight}px`,
-              marginBottom: '0',
-              textAlign: 'justify',
-              textIndent: isFirstLine ? '0' : '2em',
-              willChange: 'transform',
-            }}
-          >
-            {isFirstLine ? (
-              <>
-                <span className="pretext-drop-cap">{dropCapStyles.firstChar}</span>
-                <span>{dropCapStyles.remainingText}</span>
-              </>
-            ) : (
-              line.text
-            )}
-          </div>
-        );
-      })}
+      {lines.map((line, index) => (
+        <div
+          key={index}
+          className="pretext-line"
+          style={{
+            lineHeight: `${lineHeight}px`,
+            marginBottom: '0',
+            textAlign: 'justify',
+            textIndent: index === 0 ? '0' : '2em',
+            willChange: 'transform',
+          }}
+        >
+          {line.text}
+        </div>
+      ))}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { buildPostIndex } from '@/lib/markdown';
+import { getAllPostMetas } from '@/lib/services';
 
 export async function generateMetadata() {
   return {
@@ -10,7 +10,7 @@ export async function generateMetadata() {
 }
 
 export default async function CategoriesPage() {
-  const posts = buildPostIndex();
+  const posts = getAllPostMetas();
 
   // 统计每个分类的文章数量
   const categoryCount = posts.reduce(

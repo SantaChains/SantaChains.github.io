@@ -92,7 +92,86 @@ export function parseDate(dateValue: string | number | Date | undefined): ISODat
 // ============================================
 
 /**
+ * 文件名到完整路径的映射缓存
+ * 用于支持最短路径查找
+ */
+let imagePathMap: Map<string, string> | null = null;
+
+/**
+ * 构建图片文件名到完整路径的映射
+ * 扫描 images 目录及其子目录，建立文件名索引
+ */
+function buildImagePathMap(): Map<string, string> {
+  const map = new Map<string, string>();
+  const imagesDir = path.join(process.cwd(), 'public', 'posts', 'images');
+  
+  if (!fs.existsSync(imagesDir)) {
+    return map;
+  }
+
+  function scanDirectory(dir: string, relativePath: string = '') {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      const entryRelativePath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+      
+      if (entry.isDirectory()) {
+        scanDirectory(fullPath, entryRelativePath);
+      } else if (entry.isFile()) {
+        map.set(entry.name.toLowerCase(), entryRelativePath);
+      }
+    }
+  }
+
+  scanDirectory(imagesDir);
+  return map;
+}
+
+/**
+ * 获取图片路径映射（懒加载）
+ */
+function getImagePathMap(): Map<string, string> {
+  if (!imagePathMap) {
+    imagePathMap = buildImagePathMap();
+  }
+  return imagePathMap;
+}
+
+/**
+ * 通过最短路径查找图片
+ * @param filename 文件名（不带路径或带部分路径）
+ * @returns 标准化的图片路径
+ */
+function findImageByShortestPath(filename: string): string {
+  const map = getImagePathMap();
+  
+  // 提取文件名部分
+  const basename = path.basename(filename).toLowerCase();
+  
+  // 直接查找
+  if (map.has(basename)) {
+    return `images/${map.get(basename)!}`;
+  }
+  
+  // 如果没找到，尝试使用提供的路径
+  if (filename.includes('/')) {
+    const cleanPath = filename.replace(/^\.\//, '').replace(/^images\//, '');
+    return `images/${cleanPath}`;
+  }
+  
+  // 默认返回
+  return `images/${filename}`;
+}
+
+/**
  * 处理 banner 图片路径
+ * 支持多种格式：
+ * - 最短路径: "rustprograming.png" → 自动查找
+ * - Obsidian 风格: "[[rustprograming.png]]"
+ * - 完整路径: "images/rustprograming.png"
+ * - 子目录路径: "images/photos/rustprograming.png"
+ * - 相对路径: "./images/rustprograming.png"
  * @param bannerPath 原始路径
  * @returns 标准化路径
  */
@@ -114,23 +193,26 @@ export function processBannerPath(bannerPath: string | undefined): string | unde
     return cleanPath;
   }
 
-  // 处理相对路径 ./images/xxx.jpg
-  if (cleanPath.startsWith('./images/')) {
-    return cleanPath.replace('./images/', 'images/');
-  }
-
   // 处理 Obsidian 风格 [[image.jpg]]
   if (cleanPath.startsWith('[[') && cleanPath.endsWith(']]')) {
     const filename = cleanPath.slice(2, -2);
-    return `images/${filename}`;
+    return findImageByShortestPath(filename);
   }
 
-  // 添加 images/ 前缀
-  if (!cleanPath.startsWith('images/')) {
-    return `images/${cleanPath}`;
+  // 处理相对路径 ./images/xxx.jpg
+  if (cleanPath.startsWith('./images/')) {
+    const filename = cleanPath.replace('./images/', '');
+    return findImageByShortestPath(filename);
   }
 
-  return cleanPath;
+  // 处理已经有 images/ 前缀的路径
+  if (cleanPath.startsWith('images/')) {
+    const filename = cleanPath.replace('images/', '');
+    return findImageByShortestPath(filename);
+  }
+
+  // 最短路径：直接用文件名查找
+  return findImageByShortestPath(cleanPath);
 }
 
 /**
@@ -173,29 +255,114 @@ export function generateExcerpt(
 
 /**
  * 处理内容中的图片路径
+ * 支持多种格式：
+ * - 最短路径: ![alt](rustprograming.png) → 自动查找
+ * - Obsidian 风格: ![[rustprograming.png]]
+ * - 完整路径: ![alt](images/rustprograming.png)
+ * - 子目录路径: ![alt](images/photos/rustprograming.png)
+ * - 相对路径: ![alt](./images/rustprograming.png)
  * @param content Markdown 内容
  * @returns 处理后的内容
  */
 export function processContentImages(content: string): string {
-  // Markdown 图片: ![alt](./images/xxx.jpg)
-  content = content.replace(
-    /!\[([^\]]*)\]\(\.\/images\/([^)]+)\)/g,
-    '![$1](/posts/images/$2)'
-  );
-
-  // Markdown 图片: ![alt](images/xxx.jpg)
-  content = content.replace(
-    /!\[([^\]]*)\]\(images\/([^)]+)\)/g,
-    '![$1](/posts/images/$2)'
-  );
-
-  // Obsidian 图片: ![[image.jpg]]
+  // 处理 Obsidian 图片: ![[image.jpg]] 或 ![[subdir/image.jpg]]
   content = content.replace(
     /!\[\[([^\]]+)\]\]/g,
-    '![$1](/posts/images/$1)'
+    (match, imagePath) => {
+      const processedPath = findImageByShortestPath(imagePath);
+      const webPath = getWebBannerPath(processedPath);
+      return `![${path.basename(imagePath)}](${webPath})`;
+    }
+  );
+
+  // 处理 Markdown 图片: ![alt](./images/xxx.jpg)
+  content = content.replace(
+    /!\[([^\]]*)\]\(\.\/images\/([^)]+)\)/g,
+    (match, alt, imagePath) => {
+      const processedPath = findImageByShortestPath(imagePath);
+      const webPath = getWebBannerPath(processedPath);
+      return `![${alt}](${webPath})`;
+    }
+  );
+
+  // 处理 Markdown 图片: ![alt](images/xxx.jpg)
+  content = content.replace(
+    /!\[([^\]]*)\]\(images\/([^)]+)\)/g,
+    (match, alt, imagePath) => {
+      const processedPath = findImageByShortestPath(imagePath);
+      const webPath = getWebBannerPath(processedPath);
+      return `![${alt}](${webPath})`;
+    }
+  );
+
+  // 处理最短路径 Markdown 图片: ![alt](rustprograming.png)
+  // 只有当路径不包含 / 且不以 http(s):// 开头时才处理
+  content = content.replace(
+    /!\[([^\]]*)\]\((?!(?:https?:\/\/|\/))([^\/)]+\.[^\/)]+)\)/g,
+    (match, alt, imagePath) => {
+      const processedPath = findImageByShortestPath(imagePath);
+      const webPath = getWebBannerPath(processedPath);
+      return `![${alt}](${webPath})`;
+    }
   );
 
   return content;
+}
+
+// ============================================
+// slug 到文件名映射缓存
+// ============================================
+
+/**
+ * slug 到文件名的映射缓存
+ * key: slug (URL 友好标识)
+ * value: 文件名 (不含 .md 扩展名)
+ */
+let slugToFileNameMap: Map<string, string> | null = null;
+
+/**
+ * 构建 slug 到文件名的映射
+ * 扫描所有文章文件，读取 frontmatter 中的 slug，建立映射关系
+ */
+function buildSlugToFileNameMap(): Map<string, string> {
+  const postsDir = getPostsDirectory();
+  const map = new Map<string, string>();
+  
+  const fileNames = fs.readdirSync(postsDir).filter(name => name.endsWith('.md'));
+  
+  fileNames.forEach(fileName => {
+    const filePath = path.join(postsDir, fileName);
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const { data } = matter(fileContent);
+    
+    const fileSlug = fileName.replace(/\.md$/, '');
+    const frontmatterSlug = data.slug as string | undefined;
+    const actualSlug = frontmatterSlug || fileSlug;
+    
+    map.set(actualSlug, fileSlug);
+  });
+  
+  return map;
+}
+
+/**
+ * 获取 slug 到文件名的映射（懒加载）
+ */
+function getSlugToFileNameMap(): Map<string, string> {
+  if (!slugToFileNameMap) {
+    slugToFileNameMap = buildSlugToFileNameMap();
+  }
+  return slugToFileNameMap;
+}
+
+/**
+ * 根据 slug 查找对应的文件名
+ * @param slug 文章 slug
+ * @returns 文件名（不含 .md）或 null
+ */
+function findFileNameBySlug(slug: string): string | null {
+  const map = getSlugToFileNameMap();
+  return map.get(slug) || null;
 }
 
 // ============================================
@@ -234,21 +401,33 @@ export function getPostFileNames(): string[] {
 
 /**
  * 读取文章文件内容
- * @param slug 文章 slug
+ * @param slugOrFileName 文章 slug 或文件名
  * @returns 原始文件内容
  */
-export function readPostFile(slug: string): string {
+export function readPostFile(slugOrFileName: string): string {
   const postsDir = getPostsDirectory();
-  const filePath = path.join(postsDir, `${slug}.md`);
+  // 解码 URL 编码的 slug（支持中文）
+  const decoded = decodeURIComponent(slugOrFileName);
+  
+  // 首先尝试直接按文件名读取
+  let filePath = path.join(postsDir, `${decoded}.md`);
+  
+  // 如果直接读取失败，尝试通过 slug 映射查找
+  if (!fs.existsSync(filePath)) {
+    const fileName = findFileNameBySlug(decoded);
+    if (fileName) {
+      filePath = path.join(postsDir, `${fileName}.md`);
+    }
+  }
 
   try {
     if (!fs.existsSync(filePath)) {
-      throw new PostNotFoundError(slug);
+      throw new PostNotFoundError(slugOrFileName);
     }
     return fs.readFileSync(filePath, 'utf8');
   } catch (error) {
     if (error instanceof PostNotFoundError) throw error;
-    throw new FileSystemError(`无法读取文章文件: ${slug}`, error);
+    throw new FileSystemError(`无法读取文章文件: ${slugOrFileName}`, error);
   }
 }
 
@@ -262,9 +441,12 @@ export function readPostFile(slug: string): string {
  * @param fileContent 文件内容
  * @returns 解析后的文章数据
  */
-export function parsePost(slug: string, fileContent: string): Post {
+export function parsePost(fileSlug: string, fileContent: string): Post {
   const { data, content } = matter(fileContent);
   const frontmatter = data as PostFrontmatter;
+
+  // 优先使用 frontmatter 中的 slug，否则使用文件名
+  const slug = frontmatter.slug || fileSlug;
 
   // 解析日期
   const date = parseDate(frontmatter.created || frontmatter.date);
@@ -304,7 +486,8 @@ export function parsePost(slug: string, fileContent: string): Post {
  */
 export function parsePostMeta(slug: string, fileContent: string): PostMeta {
   const post = parsePost(slug, fileContent);
-  const { content: _, ...meta } = post;
+  const { content: _content, ...meta } = post;
+  void _content;
   return meta;
 }
 
@@ -373,7 +556,10 @@ export function getAllPosts(includeDrafts: boolean = false): Post[] {
  */
 export function getAllPostMetas(includeDrafts: boolean = false): PostMeta[] {
   const posts = getAllPosts(includeDrafts);
-  return posts.map(({ content: _, ...meta }) => meta);
+  return posts.map(({ content, ...meta }) => {
+    void content;
+    return meta;
+  });
 }
 
 /**
@@ -383,7 +569,9 @@ export function getAllPostMetas(includeDrafts: boolean = false): PostMeta[] {
  */
 export function getPostBySlug(slug: string): Post | null {
   const cache = getPostsCache();
-  const cacheKey = `post-${slug}`;
+  // 解码 URL 编码的 slug（支持中文文件名）
+  const decodedSlug = decodeURIComponent(slug);
+  const cacheKey = `post-${decodedSlug}`;
   const cached = cache.get(cacheKey) as Post | undefined;
 
   if (cached !== undefined) {
@@ -391,8 +579,8 @@ export function getPostBySlug(slug: string): Post | null {
   }
 
   try {
-    const content = readPostFile(slug);
-    const post = parsePost(slug, content);
+    const content = readPostFile(decodedSlug);
+    const post = parsePost(decodedSlug, content);
 
     if (post.draft) {
       return null; // 草稿不通过此接口返回
@@ -417,7 +605,8 @@ export function getPostMetaBySlug(slug: string): PostMeta | null {
   const post = getPostBySlug(slug);
   if (!post) return null;
 
-  const { content: _, ...meta } = post;
+  const { content, ...meta } = post;
+  void content;
   return meta;
 }
 

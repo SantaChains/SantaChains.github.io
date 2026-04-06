@@ -14,6 +14,7 @@ import { PostCard } from '@/components/post/PostCard';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { StaggerList, StaggerItem } from '@/components/animation';
 import {
   Search,
   FolderOpen,
@@ -384,11 +385,15 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
 
         {/* 文章列表 - 网格视图 */}
         {viewMode === 'grid' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPosts.map((post) => (
-              <PostCard key={post.slug} post={post} />
-            ))}
-          </div>
+          <StaggerList>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPosts.map((post) => (
+                <StaggerItem key={post.slug}>
+                  <PostCard post={post} />
+                </StaggerItem>
+              ))}
+            </div>
+          </StaggerList>
         )}
 
         {/* 文章列表 - 列表视图 */}

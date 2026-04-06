@@ -8,7 +8,7 @@ tags:
   - 开始
   - 博客
 excerpt: 这是我的新博客的第一篇文章，使用 Next.js 构建的现代静态博客系统。
-banner: images/IMG_336.jpg
+banner: "images/IMG_336.jpg"
 readingTime: true
 created: 2026-04-05T12:52
 updated: 2026-04-05T14:35
@@ -47,7 +47,7 @@ console.log(greet("世界"));
 
 ## 图片
 
-![示例图片](images/sample.jpg)
+![示例图片](images/IMG_338.png)
 
 ## 列表
 

@@ -2,18 +2,18 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { PostCard } from '@/components/post/PostCard';
 import { Badge } from '@/components/ui/badge';
-import { buildPostIndex, type Post } from '@/lib/markdown';
+import { getAllPostMetas, getAllCategories } from '@/lib/services';
+import type { Post } from '@/lib/data/types';
 
 interface CategoryPageProps {
   params: Promise<{ name: string }>;
 }
 
 export async function generateStaticParams() {
-  const posts = buildPostIndex();
-  const categories = [...new Set(posts.map((post) => post.category))];
+  const categories = getAllCategories();
 
   return categories.map((category) => ({
-    name: category,
+    name: encodeURIComponent(category),
   }));
 }
 
@@ -31,7 +31,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
 
-  const posts = buildPostIndex();
+  const posts = getAllPostMetas();
   const categoryPosts = posts.filter((post) => post.category === decodedName);
 
   if (categoryPosts.length === 0) {

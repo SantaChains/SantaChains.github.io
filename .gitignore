@@ -49,6 +49,9 @@ next-env.d.ts
 # GitHub Actions 临时文件
 .github/workflows/*.bak
 
+# 构建时生成的图片（从 src/posts/images/ 复制）
+/public/posts/images/
+
 # Backup files
 *.bak
 package.json.bak
@@ -64,12 +67,11 @@ package.json.bak
 
 # assets
 *.pdf
+*.epub
 
 # Jujutsu version control
 .jj/
 
 # Obsidian - 只保留配置，忽略个人状态
-/src/posts/.obsidian/workspace.json
-/src/posts/.obsidian/graph.json
-/src/posts/.obsidian/workspace-mobile.json
-/src/posts/.obsidian/plugins/*/data.json
+.obsidian/
+

@@ -2,19 +2,18 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { PostCard } from '@/components/post/PostCard';
 import { Badge } from '@/components/ui/badge';
-import { buildPostIndex, type Post } from '@/lib/markdown';
+import { getAllPostMetas, getAllTags } from '@/lib/services';
+import type { Post } from '@/lib/data/types';
 
 interface TagPageProps {
   params: Promise<{ name: string }>;
 }
 
 export async function generateStaticParams() {
-  const posts = buildPostIndex();
-  const allTags = posts.flatMap((post) => post.tags);
-  const uniqueTags = [...new Set(allTags)];
+  const tags = getAllTags();
 
-  return uniqueTags.map((tag) => ({
-    name: tag,
+  return tags.map((tag) => ({
+    name: encodeURIComponent(tag),
   }));
 }
 
@@ -32,7 +31,7 @@ export default async function TagPage({ params }: TagPageProps) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
 
-  const posts = buildPostIndex();
+  const posts = getAllPostMetas();
   const tagPosts = posts.filter((post) => post.tags.includes(decodedName));
 
   if (tagPosts.length === 0) {

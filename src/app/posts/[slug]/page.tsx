@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, ArrowRight, Calendar, Clock, FolderOpen, Tag, RefreshCw } from 'lucide-react';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { TableOfContents } from '@/components/post/TableOfContents';
+import { ReadingProgress } from '@/components/post/ReadingProgress';
 
 // 从业务逻辑层导入
 import {
@@ -27,7 +28,7 @@ import {
   transformWikiLinksToHtml,
 } from '@/lib/services';
 
-import type { Post, PostMeta } from '@/lib/data/types';
+import type { Post } from '@/lib/data/types';
 
 // ============================================
 // 类型定义
@@ -45,11 +46,14 @@ interface PostPageProps {
 
 /**
  * 生成所有静态路径
+ * 注意：静态导出时需要返回 URL 编码后的 slug
+ * 开发模式下 Next.js 会比较编码后的 URL 路径
  */
 export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
   const posts = getAllPostMetas();
   return posts.map((post) => ({
-    slug: post.slug,
+    // 返回 URL 编码后的 slug，与 URL 路径匹配
+    slug: encodeURIComponent(post.slug),
   }));
 }
 
@@ -264,6 +268,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* 阅读进度条 */}
+      <ReadingProgress targetSelector="article" />
+
       {/* 简化的雾气层 */}
       <div className="mist-layer" />
 

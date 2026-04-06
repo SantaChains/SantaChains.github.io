@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { buildPostIndex } from '@/lib/markdown';
+import { getAllPostMetas } from '@/lib/services';
 
 export async function generateMetadata() {
   return {
@@ -10,7 +10,7 @@ export async function generateMetadata() {
 }
 
 export default async function TagsPage() {
-  const posts = buildPostIndex();
+  const posts = getAllPostMetas();
 
   // 统计每个标签的文章数量
   const tagCount = posts.reduce(

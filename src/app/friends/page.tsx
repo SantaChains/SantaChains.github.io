@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { ExternalLink, Users } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -47,7 +46,7 @@ export default function FriendsPage() {
                 href={friend.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group block p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)]
+                className="group block p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)]
                   hover:border-[var(--accent-purple)]/50 hover:shadow-lg hover:shadow-[var(--accent-purple)]/5
                   transition-all duration-300"
               >
@@ -77,7 +76,7 @@ export default function FriendsPage() {
 
         {/* 交换链接说明 */}
         <div className="mt-16 max-w-2xl mx-auto">
-          <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)]">
+          <div className="p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
             <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">
               交换链接
             </h2>

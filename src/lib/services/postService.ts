@@ -11,7 +11,7 @@
  * 依赖：数据层 (src/lib/data/)
  */
 
-import type { Post, PostMeta, ISODateString } from '@/lib/data/types';
+import type { PostMeta, ISODateString } from '@/lib/data/types';
 import {
   getAllPosts,
   getAllPostMetas,

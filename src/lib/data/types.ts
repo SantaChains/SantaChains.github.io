@@ -81,7 +81,10 @@ export interface PostSummary {
  * Markdown Frontmatter 原始数据
  */
 export interface PostFrontmatter {
+  /** 文章标题 */
   title?: string;
+  /** 文章 slug（URL 友好标识，可选，默认使用文件名） */
+  slug?: string;
   date?: string | number | Date;
   created?: string | number | Date;
   updated?: string | number | Date;

@@ -2,7 +2,7 @@
 title: 知识锁创意与合作小甜点
 slug: Metroidbrainia
 created: 2026-04-05T14:32
-updated: 2026-04-05T15:54
+updated: 2026-04-06T21:52
 draft: false
 category: 技术
 tags:
@@ -10,9 +10,10 @@ tags:
   - 独立游戏
   - 游戏设计
 excerpt: 知识锁游戏设计精髓 + 小团队独立开发成本控制指南
-banner: images/example.jpg
+banner: "images/example.jpg"
 readingTime: true
 ---
+
 
 ## 什么是知识锁(Metroidbrainia)
 

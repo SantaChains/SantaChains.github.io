@@ -69,7 +69,6 @@ export interface PretextContentProps {
   className?: string;
   fontSize?: number;
   lineHeight?: number;
-  enableDropCap?: boolean;
   enableOptimization?: boolean;
   onLayoutComplete?: (info: LayoutInfo) => void;
   onMetricsUpdate?: (metrics: PerformanceMetrics) => void;

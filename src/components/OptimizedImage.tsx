@@ -73,9 +73,6 @@ export function OptimizedImage({
     onError?.();
   };
 
-  // 判断是否为外部图片
-  const isExternalImage = src.startsWith('http://') || src.startsWith('https://');
-
   // 本地图片使用 empty placeholder（静态导出不支持 blurDataURL 生成）
   // 外部图片也使用 empty placeholder（避免跨域问题）
   const placeholder = 'empty';
