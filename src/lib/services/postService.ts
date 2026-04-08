@@ -6,7 +6,7 @@
  * 2. 业务规则处理
  * 3. 阅读时间计算
  * 4. 相邻文章获取
- * 5. 搜索结果处理
+ * 5. 日期格式化与归档
  *
  * 依赖：数据层 (src/lib/data/)
  */
@@ -62,15 +62,6 @@ export interface ArchiveItem {
   year: number;
   month: number;
   posts: PostMeta[];
-}
-
-/**
- * 搜索结果
- */
-export interface SearchResult {
-  post: PostMeta;
-  relevance: number;
-  matchedFields: string[];
 }
 
 // ============================================
@@ -230,72 +221,6 @@ export function getArchives(): ArchiveItem[] {
     if (a.year !== b.year) return b.year - a.year;
     return b.month - a.month;
   });
-}
-
-// ============================================
-// 搜索
-// ============================================
-
-/**
- * 搜索文章
- * @param query 搜索关键词
- * @param limit 结果限制
- * @returns 搜索结果
- */
-export function searchPosts(query: string, limit: number = 10): SearchResult[] {
-  if (!query.trim()) return [];
-
-  const posts = getAllPostMetas();
-  const searchTerm = query.toLowerCase().trim();
-  const searchTerms = searchTerm.split(/\s+/);
-
-  const results: SearchResult[] = posts.map(post => {
-    const matchedFields: string[] = [];
-    let relevance = 0;
-
-    // 标题匹配（权重最高）
-    const titleLower = post.title.toLowerCase();
-    if (titleLower.includes(searchTerm)) {
-      matchedFields.push('title');
-      relevance += titleLower === searchTerm ? 10 : 5;
-    }
-
-    // 标签匹配
-    const matchingTags = post.tags.filter(tag =>
-      tag.toLowerCase().includes(searchTerm)
-    );
-    if (matchingTags.length > 0) {
-      matchedFields.push('tags');
-      relevance += matchingTags.length * 3;
-    }
-
-    // 分类匹配
-    if (post.category.toLowerCase().includes(searchTerm)) {
-      matchedFields.push('category');
-      relevance += 3;
-    }
-
-    // 摘要匹配
-    const excerptLower = post.excerpt.toLowerCase();
-    const excerptMatches = searchTerms.filter(term =>
-      excerptLower.includes(term)
-    ).length;
-    if (excerptMatches > 0) {
-      matchedFields.push('excerpt');
-      relevance += excerptMatches * 2;
-    }
-
-    return {
-      post,
-      relevance,
-      matchedFields,
-    };
-  });
-
-  return results
-    .filter(result => result.relevance > 0)
-    .sort((a, b) => b.relevance - a.relevance)
-    .slice(0, limit);
 }
 
 // ============================================

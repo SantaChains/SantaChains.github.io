@@ -13,7 +13,6 @@ export type {
   AdjacentPost,
   PostStats,
   ArchiveItem,
-  SearchResult,
 } from './postService';
 
 export {
@@ -26,8 +25,6 @@ export {
   getRelativeTime,
   // 归档
   getArchives,
-  // 搜索
-  searchPosts,
   // 统计
   getPostStats,
   // 数据访问（重新导出）

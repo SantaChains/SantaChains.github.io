@@ -32,10 +32,6 @@ import {
   FileSystemError,
 } from './types';
 import { getPostsCache } from './cache';
-import {
-  normalizeSlug,
-  isValidSlug,
-} from '@/lib/slug-utils';
 
 // ============================================
 // 路径配置

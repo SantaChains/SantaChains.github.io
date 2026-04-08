@@ -1,7 +1,7 @@
 /**
  * 文章卡片组件
  *
- * 注意：此组件在客户端运行，不直接访问数据层
+ * 支持搜索关键词高亮
  */
 
 'use client';
@@ -11,9 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import type { PostMeta } from '@/lib/data/types';
+import { highlightMatch } from '@/lib/search-highlight';
 
 interface PostCardProps {
   post: PostMeta;
+  searchQuery?: string;
 }
 
 function formatCardDate(dateString: string): string {
@@ -31,7 +33,7 @@ function getCardBannerPath(bannerPath: string | undefined): string | undefined {
   return `/posts/${bannerPath}`;
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, searchQuery }: PostCardProps) {
   const webBannerPath = getCardBannerPath(post.banner);
 
   return (
@@ -54,26 +56,26 @@ export function PostCard({ post }: PostCardProps) {
         <CardHeader>
           <div className="flex items-center gap-2 mb-2">
             <Badge variant="secondary" className="text-xs">
-              {post.category}
+              {searchQuery ? highlightMatch(post.category, searchQuery) : post.category}
             </Badge>
             <span className="text-xs text-muted-foreground">
               {formatCardDate(post.date)}
             </span>
           </div>
           <CardTitle className="text-lg text-gradient group-hover:text-primary transition-colors">
-            {post.title}
+            {searchQuery ? highlightMatch(post.title, searchQuery) : post.title}
           </CardTitle>
         </CardHeader>
 
         <CardContent>
           <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-            {post.excerpt}
+            {searchQuery ? highlightMatch(post.excerpt, searchQuery) : post.excerpt}
           </p>
 
           <div className="flex flex-wrap gap-1">
             {post.tags.slice(0, 3).map((tag) => (
               <Badge key={tag} variant="outline" className="text-xs">
-                {tag}
+                {searchQuery ? highlightMatch(tag, searchQuery) : tag}
               </Badge>
             ))}
             {post.tags.length > 3 && (

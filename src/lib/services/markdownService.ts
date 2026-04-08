@@ -187,8 +187,11 @@ export function processMarkdown(content: string): string {
       const lang = language ? escapeHtml(language) : '';
       const escapedCode = escapeHtml(trimmedCode);
       const langLabel = lang ? `<div class="code-language">${lang}</div>` : '';
-      const codeDataAttr = globalThis.btoa?.(unescape(encodeURIComponent(trimmedCode))) || encodeURIComponent(trimmedCode);
-      return `<div class="code-block-wrapper">${langLabel}<pre class="code-block"><code>${escapedCode}</code></pre><button class="code-copy-btn" data-code="${codeDataAttr}" data-original="${encodeURIComponent(trimmedCode)}" title="复制代码"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></div>`;
+      // 使用 base64 编码存储原始代码，避免特殊字符问题
+      const codeDataAttr = typeof window !== 'undefined'
+        ? btoa(unescape(encodeURIComponent(trimmedCode)))
+        : Buffer.from(trimmedCode).toString('base64');
+      return `<div class="code-block-wrapper">${langLabel}<pre class="code-block"><code>${escapedCode}</code></pre><button class="code-copy-btn" data-code="${codeDataAttr}" title="复制代码"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></div>`;
     }
   );
 

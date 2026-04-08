@@ -18,6 +18,11 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
+        {/* Content Security Policy */}
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content={buildCSP()}
+        />
         {/* Preconnect to Google Fonts for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -41,4 +46,51 @@ export default function RootLayout({
       </body>
     </html>
   );
+}
+
+/**
+ * 构建 Content Security Policy 策略
+ *
+ * 策略说明：
+ * - default-src 'self': 仅允许同源资源
+ * - script-src 'self' 'unsafe-inline' 'unsafe-eval': 允许同源脚本 + 内联脚本（Next.js需要）
+ * - style-src 'self' 'unsafe-inline' https://fonts.googleapis.com: 允许内联样式 + Google字体
+ * - font-src 'self' https://fonts.gstatic.com: 允许 Google 字体
+ * - img-src 'self' data: blob: https://img.shields.io: 允许图片（本地 + SVG badge + data URLs）
+ * - connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com: 允许字体API连接
+ * - frame-ancestors 'none': 禁止被嵌入iframe
+ * - base-uri 'self': 限制 base 标签源
+ * - form-action 'self': 限制表单提交流向
+ */
+function buildCSP(): string {
+  const directives = [
+    // 默认仅允许同源
+    "default-src 'self'",
+
+    // 脚本：同源 + 内联（Next.js需要）+ unsafe-eval（开发用）
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+
+    // 样式：同源 + 内联 + Google Fonts
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+
+    // 字体：本地 + Google Fonts
+    "font-src 'self' https://fonts.gstatic.com",
+
+    // 图片：本地 + data URLs + badge图标
+    "img-src 'self' data: blob: https://img.shields.io https://img.yoqi.me",
+
+    // 连接：字体API
+    "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
+
+    // 禁止被嵌入
+    "frame-ancestors 'none'",
+
+    // 限制 base 标签
+    "base-uri 'self'",
+
+    // 限制表单提交
+    "form-action 'self'",
+  ];
+
+  return directives.join('; ');
 }

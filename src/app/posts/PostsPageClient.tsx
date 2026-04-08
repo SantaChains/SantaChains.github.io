@@ -1,14 +1,16 @@
 /**
  * 文章列表页客户端组件
  *
- * 使用新的分层架构：
- * - 数据层：@/lib/data
- * - 业务逻辑层：@/lib/services
+ * 优化版本：
+ * - 防抖搜索，减少频繁计算
+ * - 搜索历史记录
+ * - 关键词高亮
+ * - 高级匹配算法（标题 > 标签 > 摘要 > 分类）
  */
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { PostCard } from '@/components/post/PostCard';
 import { Badge } from '@/components/ui/badge';
@@ -22,8 +24,17 @@ import {
   Grid3X3,
   List,
   X,
+  Clock,
+  Sparkles,
 } from 'lucide-react';
 import type { PostMeta } from '@/lib/data/types';
+import {
+  useDebounce,
+  useSearchHistory,
+  searchPosts,
+  type SearchablePost,
+} from '@/lib/search-utils';
+import { highlightMatch } from '@/lib/search-highlight';
 
 // ============================================================
 // 类型定义
@@ -40,9 +51,6 @@ interface PostsPageClientProps {
 // 工具函数
 // ============================================================
 
-/**
- * 格式化日期
- */
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('zh-CN', {
@@ -52,12 +60,8 @@ function formatDate(dateString: string): string {
   });
 }
 
-/**
- * 获取年份分组的文章
- */
 function groupPostsByYear(posts: PostMeta[]): Map<string, PostMeta[]> {
   const grouped = new Map<string, PostMeta[]>();
-
   posts.forEach((post) => {
     const year = new Date(post.date).getFullYear().toString();
     if (!grouped.has(year)) {
@@ -65,42 +69,47 @@ function groupPostsByYear(posts: PostMeta[]): Map<string, PostMeta[]> {
     }
     grouped.get(year)!.push(post);
   });
-
   return grouped;
+}
+
+function postsToSearchable(posts: PostMeta[]): SearchablePost[] {
+  return posts.map((post) => ({
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt,
+    tags: post.tags,
+    category: post.category,
+    date: post.date,
+  }));
 }
 
 // ============================================================
 // 子组件
 // ============================================================
 
-/**
- * 列表视图文章项
- */
-function PostListItem({ post }: { post: PostMeta }) {
+interface PostListItemProps {
+  post: PostMeta;
+  searchQuery?: string;
+}
+
+function PostListItem({ post, searchQuery }: PostListItemProps) {
   return (
     <Link href={`/posts/${encodeURIComponent(post.slug)}`}>
       <article className="group p-4 rounded-lg bg-card/50 hover:bg-card transition-colors border border-transparent hover:border-border">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          {/* 日期 */}
           <span className="text-sm text-muted-foreground whitespace-nowrap">
             {formatDate(post.date)}
           </span>
-
-          {/* 分类 */}
           <Badge variant="secondary" className="w-fit">
             {post.category}
           </Badge>
-
-          {/* 标题 */}
           <h3 className="font-medium text-foreground group-hover:text-accent-red transition-colors flex-1">
-            {post.title}
+            {searchQuery ? highlightMatch(post.title, searchQuery) : post.title}
           </h3>
-
-          {/* 标签 */}
           <div className="flex flex-wrap gap-1">
             {post.tags.slice(0, 2).map((tag) => (
               <Badge key={tag} variant="outline" className="text-xs">
-                {tag}
+                {searchQuery ? highlightMatch(tag, searchQuery) : tag}
               </Badge>
             ))}
             {post.tags.length > 2 && (
@@ -110,19 +119,14 @@ function PostListItem({ post }: { post: PostMeta }) {
             )}
           </div>
         </div>
-
-        {/* 摘要 */}
         <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-          {post.excerpt}
+          {searchQuery ? highlightMatch(post.excerpt, searchQuery) : post.excerpt}
         </p>
       </article>
     </Link>
   );
 }
 
-/**
- * 统计信息组件
- */
 function StatsSection({
   totalPosts,
   categories,
@@ -152,50 +156,129 @@ function StatsSection({
   );
 }
 
+function SearchHistoryDropdown({
+  history,
+  onSelect,
+  onClear,
+  onRemove,
+}: {
+  history: string[];
+  onSelect: (query: string) => void;
+  onClear: () => void;
+  onRemove: (query: string) => void;
+}) {
+  if (history.length === 0) return null;
+
+  return (
+    <div className="absolute top-full left-0 right-0 mt-1 bg-card border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+      <div className="flex items-center justify-between px-3 py-2 border-b">
+        <span className="text-xs text-muted-foreground flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          搜索历史
+        </span>
+        <button
+          onClick={onClear}
+          className="text-xs text-muted-foreground hover:text-foreground"
+        >
+          清除全部
+        </button>
+      </div>
+      {history.map((query) => (
+        <div
+          key={query}
+          className="flex items-center justify-between px-3 py-2 hover:bg-accent/50 cursor-pointer group"
+          onClick={() => onSelect(query)}
+        >
+          <span className="text-sm">{query}</span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(query);
+            }}
+            className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ============================================================
 // 主客户端组件
 // ============================================================
 
 export function PostsPageClient({ posts }: PostsPageClientProps) {
   // 状态管理
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortMode, setSortMode] = useState<SortMode>('date');
+  const [showHistory, setShowHistory] = useState(false);
 
-  // 使用传入的文章数据
+  // 防抖搜索词（300ms 延迟）
+  const debouncedSearchQuery = useDebounce(searchInput, 300);
+
+  // 搜索历史
+  const { history, addToHistory, clearHistory, removeFromHistory } =
+    useSearchHistory();
+
   const allPosts = posts;
 
-  // 提取所有分类和标签
+  // 提取分类和标签
   const { categories, tags } = useMemo(() => {
     const categorySet = new Set<string>();
     const tagSet = new Set<string>();
-
     allPosts.forEach((post) => {
       categorySet.add(post.category);
       post.tags.forEach((tag) => tagSet.add(tag));
     });
-
     return {
       categories: Array.from(categorySet).sort(),
       tags: Array.from(tagSet).sort(),
     };
   }, [allPosts]);
 
+  // 高级搜索结果
+  const searchResults = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) {
+      return [];
+    }
+    const searchablePosts = postsToSearchable(allPosts);
+    return searchPosts(searchablePosts, debouncedSearchQuery, {
+      boostTitle: 10,
+      boostExcerpt: 5,
+      boostTags: 3,
+      boostCategory: 1,
+    });
+  }, [allPosts, debouncedSearchQuery]);
+
+  // 搜索结果 ID 集合（用于快速查找）
+  const searchResultIds = useMemo(() => {
+    return new Set(searchResults.map((r) => r.post.slug));
+  }, [searchResults]);
+
   // 筛选和排序文章
   const filteredPosts = useMemo(() => {
     let filtered = [...allPosts];
 
-    // 搜索筛选
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (post) =>
-          post.title.toLowerCase().includes(query) ||
-          post.excerpt.toLowerCase().includes(query) ||
-          post.tags.some((tag) => tag.toLowerCase().includes(query))
-      );
+    // 搜索筛选（优先使用高级搜索结果）
+    if (debouncedSearchQuery.trim()) {
+      if (searchResults.length > 0) {
+        // 使用高级搜索结果，按相关性排序
+        filtered = allPosts.filter((p) => searchResultIds.has(p.slug));
+        // 保持搜索结果顺序
+        filtered.sort((a, b) => {
+          const aIndex = searchResults.findIndex((r) => r.post.slug === a.slug);
+          const bIndex = searchResults.findIndex((r) => r.post.slug === b.slug);
+          return aIndex - bIndex;
+        });
+      } else {
+        // 无结果时显示空
+        filtered = [];
+      }
     }
 
     // 分类筛选
@@ -218,29 +301,36 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
     }
 
     return filtered;
-  }, [allPosts, searchQuery, selectedCategory, selectedTag, sortMode]);
+  }, [allPosts, debouncedSearchQuery, searchResults, searchResultIds, selectedCategory, selectedTag, sortMode]);
 
-  // 清除所有筛选
+  // 添加到搜索历史
+  useEffect(() => {
+    if (debouncedSearchQuery.trim() && searchResults.length > 0) {
+      addToHistory(debouncedSearchQuery.trim());
+    }
+  }, [debouncedSearchQuery, searchResults.length, addToHistory]);
+
   const clearFilters = () => {
-    setSearchQuery('');
+    setSearchInput('');
     setSelectedCategory(null);
     setSelectedTag(null);
   };
 
-  // 按年份分组（仅列表视图）
+  const handleHistorySelect = (query: string) => {
+    setSearchInput(query);
+    setShowHistory(false);
+  };
+
   const groupedPosts = useMemo(() => {
     return groupPostsByYear(filteredPosts);
   }, [filteredPosts]);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* 简化的雾气层 */}
       <div className="mist-layer" />
       <div className="mist-layer" style={{ animationDelay: '3s' }} />
 
-      {/* 主内容区域 */}
       <div className="relative z-10 container mx-auto px-4 py-8 md:py-16">
-        {/* 页面标题 */}
         <header className="text-center mb-8 md:mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gradient">
             文章列表
@@ -250,7 +340,6 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
           </p>
         </header>
 
-        {/* 统计信息 */}
         <StatsSection
           totalPosts={allPosts.length}
           categories={categories}
@@ -264,19 +353,32 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="搜索文章标题、内容或标签..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchInput}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+                setShowHistory(true);
+              }}
+              onFocus={() => setShowHistory(true)}
+              onBlur={() => setTimeout(() => setShowHistory(false), 200)}
               className="pl-10"
             />
-            {searchQuery && (
+            {searchInput && (
               <Button
                 variant="ghost"
                 size="sm"
                 className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                onClick={() => setSearchQuery('')}
+                onClick={() => setSearchInput('')}
               >
                 <X className="w-4 h-4" />
               </Button>
+            )}
+            {showHistory && history.length > 0 && (
+              <SearchHistoryDropdown
+                history={history}
+                onSelect={handleHistorySelect}
+                onClear={clearHistory}
+                onRemove={removeFromHistory}
+              />
             )}
           </div>
 
@@ -303,7 +405,6 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
 
         {/* 筛选器 */}
         <div className="mb-8">
-          {/* 分类筛选 */}
           <div className="mb-4">
             <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
               <FolderOpen className="w-4 h-4" />
@@ -327,7 +428,6 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
             </div>
           </div>
 
-          {/* 标签筛选 */}
           <div>
             <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
               <Tag className="w-4 h-4" />
@@ -349,8 +449,7 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
             </div>
           </div>
 
-          {/* 清除筛选 */}
-          {(selectedCategory || selectedTag || searchQuery) && (
+          {(selectedCategory || selectedTag || searchInput) && (
             <Button
               variant="ghost"
               size="sm"
@@ -367,7 +466,13 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-muted-foreground">
             共 {filteredPosts.length} 篇文章
-            {(selectedCategory || selectedTag || searchQuery) && '（筛选结果）'}
+            {debouncedSearchQuery && (
+              <span className="ml-2 flex items-center gap-1 inline-flex">
+                <Sparkles className="w-3 h-3 text-accent-red" />
+                搜索 &quot;{debouncedSearchQuery}&quot; 找到 {searchResults.length} 条结果
+              </span>
+            )}
+            {(selectedCategory || selectedTag) && '（筛选结果）'}
           </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">排序：</span>
@@ -389,7 +494,7 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPosts.map((post) => (
                 <StaggerItem key={post.slug}>
-                  <PostCard post={post} />
+                  <PostCard post={post} searchQuery={debouncedSearchQuery} />
                 </StaggerItem>
               ))}
             </div>
@@ -399,14 +504,18 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
         {/* 文章列表 - 列表视图 */}
         {viewMode === 'list' && (
           <div className="space-y-2">
-            {Array.from(groupedPosts.entries()).map(([year, posts]) => (
+            {Array.from(groupedPosts.entries()).map(([year, yearPosts]) => (
               <div key={year}>
                 <h2 className="text-lg font-bold text-muted-foreground mb-3 sticky top-16 bg-background/95 backdrop-blur-sm py-2">
                   {year} 年
                 </h2>
                 <div className="space-y-2">
-                  {posts.map((post) => (
-                    <PostListItem key={post.slug} post={post} />
+                  {yearPosts.map((post) => (
+                    <PostListItem
+                      key={post.slug}
+                      post={post}
+                      searchQuery={debouncedSearchQuery}
+                    />
                   ))}
                 </div>
               </div>
@@ -426,7 +535,7 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
                 ? '敬请期待更多精彩内容...'
                 : '尝试调整搜索条件或筛选器'}
             </p>
-            {(selectedCategory || selectedTag || searchQuery) && (
+            {(selectedCategory || selectedTag || searchInput) && (
               <Button variant="outline" onClick={clearFilters}>
                 清除筛选条件
               </Button>
@@ -435,7 +544,6 @@ export function PostsPageClient({ posts }: PostsPageClientProps) {
         )}
       </div>
 
-      {/* 背景元素 */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-accent-red/3 rounded-full blur-xl animate-pulse-slow" />
         <div

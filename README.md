@@ -34,10 +34,17 @@
 - **响应式设计**：完美适配桌面、平板和移动设备
 
 ### 📝 内容展示
-- **Markdown渲染**：支持完整的Markdown语法，包括表格、代码块等
+- **Markdown渲染**：支持完整的Markdown语法，包括表格、代码块、GFM扩展等
 - **目录导航**：自动提取文章标题，支持平滑滚动定位
 - **首字下沉**：文章首字采用特殊字体，增添文学气息
 - **图片懒加载**：优化性能的同时保持流畅体验
+- **代码高亮**：代码块使用霞鹜文楷Mono字体，优雅展示
+
+### 🏷️ 内容组织
+- **分类系统**：文章按主题分类，便于浏览
+- **标签云**：支持多标签管理，快速筛选相关内容
+- **友链页面**：展示友情链接
+- **留言板**：访客可以留下评论和反馈
 
 ---
 
@@ -46,11 +53,14 @@
 | 技术 | 用途 |
 |------|------|
 | **Next.js 15.4.4** | React框架，支持App Router |
-| **TypeScript** | 类型安全的JavaScript |
-| **Tailwind CSS** | 实用优先的CSS框架 |
+| **TypeScript 5.x** | 类型安全的JavaScript |
+| **Tailwind CSS 4.x** | 实用优先的CSS框架 |
 | **shadcn/ui** | 精美的React组件库 |
 | **Framer Motion** | 流畅的动画效果 |
 | **Canvas API** | 高性能粒子系统 |
+| **Radix UI** | 无障碍UI组件基础 |
+| **Remark** | Markdown解析与处理 |
+| **Turbopack** | 下一代打包工具（开发模式） |
 
 ---
 
@@ -75,6 +85,10 @@
 
 ---
 
+## 推荐配合obsidian使用
+**推荐插件**
+![1775637410620](image/README/1775637410620.png)
+
 ## 🚀 快速开始
 
 ```bash
@@ -87,17 +101,23 @@ cd santachains-blog
 # 安装依赖
 npm install
 
-# 启动开发服务器
+# 启动开发服务器（使用Turbopack）
 npm run dev
 ```
 
 访问 http://localhost:3000 查看效果。
 
-### 构建生产版本
+### 可用命令
 
-```bash
-npm run build
-```
+| 命令 | 说明 |
+|------|------|
+| `npm run dev` | 启动开发服务器（Turbopack加速） |
+| `npm run build` | 构建生产版本 |
+| `npm run prebuild` | 复制图片资源到public目录 |
+| `npm start` | 启动生产服务器 |
+| `npm run lint` | 运行ESLint代码检查 |
+| `npm run verify` | 验证文章slug和图片完整性 |
+| `npm run copy-images` | 手动复制图片资源 |
 
 构建输出位于 `dist` 目录。
 
@@ -109,17 +129,30 @@ npm run build
 santachains-blog/
 ├── src/
 │   ├── app/              # Next.js App Router
+│   │   ├── categories/   # 分类页面
+│   │   ├── friends/      # 友链页面
+│   │   ├── guestbook/    # 留言板页面
+│   │   ├── posts/        # 文章列表与详情
+│   │   └── tags/         # 标签页面
 │   ├── components/       # React组件
+│   │   ├── animation/    # 动画组件
+│   │   ├── animations/   # 动效组件
+│   │   ├── dynamic/      # 动态导入组件
 │   │   ├── effects/      # 视觉效果组件
 │   │   ├── layout/       # 布局组件
 │   │   ├── post/         # 文章相关组件
-│   │   └── ui/           # UI组件库
-│   ├── content/          # Markdown文章
-│   ├── hooks/            # 自定义Hooks
+│   │   └── ui/           # UI组件库(shadcn)
 │   ├── lib/              # 工具函数
+│   │   ├── data/         # 数据层
+│   │   └── services/     # 服务层
+│   ├── posts/            # 博客内容
+│   │   ├── content/      # Markdown文章
+│   │   ├── images/       # 文章配图
+│   │   └── templates/    # 文章模板
 │   └── types/            # TypeScript类型
 ├── public/               # 静态资源
 │   └── fonts/            # 字体文件
+├── scripts/              # 构建脚本
 └── .github/workflows/    # CI/CD配置
 ```
 
@@ -139,9 +172,10 @@ santachains-blog/
 
 | 字体 | 文件 | 用途 |
 |------|------|------|
-| **有字库龙藏体** | `Arima-Regular.ttf` | 标题和正文 |
+| **Google Arima** | `Arima-Regular.ttf` | 标题和正文 |
 | **文泉微米黑** | `WenQuanWeiMiHei.ttf` | 正文内容 |
 | **仓耳今楷03** | `CangErJinKai03.ttf` | 首字下沉 |
+| **霞鹜文楷 Mono** | `LXGWWenKaiMono.ttf` | 代码块和等宽文本 |
 
 ---
 
@@ -160,9 +194,10 @@ santachains-blog/
 - [chenglou/pretext](https://github.com/chenglou/pretext) - 排版灵感
 
 ### 字体资源
-- [有字库](https://www.youziku.com/) - 龙藏体
+- [Google Fonts](https://fonts.google.com/) - Arima
 - [文泉驿](http://wenq.org/) - 微米黑
 - [仓耳字库](https://www.tsanger.cn/) - 今楷
+- [霞鹜文楷](https://github.com/lxgw/LxgwWenKai) - 文楷Mono
 
 ---
 

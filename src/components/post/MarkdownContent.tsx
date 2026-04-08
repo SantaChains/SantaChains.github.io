@@ -85,7 +85,19 @@ export function MarkdownContent({ content, className = '' }: MarkdownContentProp
 
     copyButtons.forEach((btn) => {
       const button = btn as HTMLElement;
-      const code = decodeURIComponent(button.dataset.original || button.dataset.code || '');
+      const codeData = button.dataset.code || '';
+      // 解码 base64 获取原始代码
+      let code = '';
+      try {
+        code = decodeURIComponent(escape(atob(codeData)));
+      } catch {
+        // 如果解码失败，尝试直接解码
+        try {
+          code = atob(codeData);
+        } catch {
+          code = codeData;
+        }
+      }
 
       const handleCopy = async () => {
         try {
