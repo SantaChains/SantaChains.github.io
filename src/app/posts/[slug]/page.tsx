@@ -202,7 +202,7 @@ function PostNavigation({
         {/* 上一篇 */}
         {prev ? (
           <Link
-            href={`/posts/${prev.slug}`}
+            href={`/posts/${encodeURIComponent(prev.slug)}`}
             className="group flex flex-col p-4 rounded-lg bg-card/50 hover:bg-card transition-colors border border-transparent hover:border-border"
           >
             <span className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
@@ -220,7 +220,7 @@ function PostNavigation({
         {/* 下一篇 */}
         {next ? (
           <Link
-            href={`/posts/${next.slug}`}
+            href={`/posts/${encodeURIComponent(next.slug)}`}
             className="group flex flex-col p-4 rounded-lg bg-card/50 hover:bg-card transition-colors border border-transparent hover:border-border text-right sm:text-left sm:items-end"
           >
             <span className="text-sm text-muted-foreground mb-1 flex items-center gap-1 sm:flex-row-reverse">

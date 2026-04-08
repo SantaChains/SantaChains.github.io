@@ -10,7 +10,7 @@ tags:
   - 日本文学
   - 三岛由纪夫
 excerpt: 美与毁灭的永恒对话，一个关于嫉妒、执念与解脱的黑暗寓言。
-banner: "images/289972.jpg"
+banner: "images/person3.jpg"
 readingTime: true
 ---
 

@@ -99,10 +99,10 @@ export function transformWikiLinksToHtml(content: string, posts: PostMeta[]): st
     }
 
     if (exists && finalSlug) {
-      return `<a href="/posts/${escapeHtml(finalSlug)}" class="wikilink">${linkText}</a>`;
+      return `<a href="/posts/${escapeHtml(encodeURIComponent(finalSlug))}" class="wikilink">${linkText}</a>`;
     }
 
-    return `<a href="/posts/${escapeHtml(targetSlug)}" class="wikilink wikilink-missing">${linkText}</a>`;
+    return `<a href="/posts/${escapeHtml(encodeURIComponent(targetSlug))}" class="wikilink wikilink-missing">${linkText}</a>`;
   });
 }
 
@@ -124,7 +124,7 @@ export function processObsidianLinks(content: string, posts: PostMeta[]): string
     const slug = titleToSlug.get(slugify(link)) || titleToSlug.get(slugify(link.replace(/\.md$/, '')));
 
     if (slug) {
-      return `[${linkText}](/posts/${escapeHtml(slug)})`;
+      return `[${linkText}](/posts/${escapeHtml(encodeURIComponent(slug))})`;
     }
 
     return linkText;

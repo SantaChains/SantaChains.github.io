@@ -8,6 +8,11 @@
  * 4. 错误处理
  *
  * 注意：此层不处理业务逻辑，只负责原始数据访问
+ *
+ * 中文和标点符号支持：
+ * - slug 支持中文、英文、标点符号
+ * - 使用 encodeURIComponent/decodeURIComponent 处理 URL 编码
+ * - 文件系统操作使用原生中文支持
  */
 
 import fs from 'fs';
@@ -27,6 +32,10 @@ import {
   FileSystemError,
 } from './types';
 import { getPostsCache } from './cache';
+import {
+  normalizeSlug,
+  isValidSlug,
+} from '@/lib/slug-utils';
 
 // ============================================
 // 路径配置

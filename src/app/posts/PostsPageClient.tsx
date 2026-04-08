@@ -78,7 +78,7 @@ function groupPostsByYear(posts: PostMeta[]): Map<string, PostMeta[]> {
  */
 function PostListItem({ post }: { post: PostMeta }) {
   return (
-    <Link href={`/posts/${post.slug}`}>
+    <Link href={`/posts/${encodeURIComponent(post.slug)}`}>
       <article className="group p-4 rounded-lg bg-card/50 hover:bg-card transition-colors border border-transparent hover:border-border">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           {/* 日期 */}

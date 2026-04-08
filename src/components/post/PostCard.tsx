@@ -35,7 +35,7 @@ export function PostCard({ post }: PostCardProps) {
   const webBannerPath = getCardBannerPath(post.banner);
 
   return (
-    <Link href={`/posts/${post.slug}`}>
+    <Link href={`/posts/${encodeURIComponent(post.slug)}`}>
       <Card className="group cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-primary/20 border-0 bg-card/80 backdrop-blur-sm h-full">
         {webBannerPath && (
           <div className="relative h-48 overflow-hidden rounded-t-lg">
