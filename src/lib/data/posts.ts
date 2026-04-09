@@ -495,9 +495,22 @@ export function parsePost(fileSlug: string, fileContent: string, fileName?: stri
   // 生成摘要
   const excerpt = generateExcerpt(processedContent, frontmatter.excerpt);
 
+  // 提取标题：优先使用 frontmatter.title，否则从内容中提取第一个 # 标题，最后使用文件名
+  let title = frontmatter.title;
+  if (!title) {
+    // 从内容中提取第一个 # 标题
+    const headingMatch = content.match(/^#\s+(.+)$/m);
+    if (headingMatch) {
+      title = headingMatch[1].trim();
+    } else {
+      // 使用文件名作为标题（去掉扩展名，替换连字符为空格）
+      title = fileSlug.replace(/-/g, ' ').replace(/_/g, ' ');
+    }
+  }
+
   return {
     slug,
-    title: frontmatter.title || '无标题',
+    title: title || '无标题',
     date,
     created,
     updated,

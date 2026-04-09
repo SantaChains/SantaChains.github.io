@@ -117,8 +117,8 @@ async function highlightCodeBlock(code: string, language?: string): Promise<stri
       `<span class="line-number" aria-hidden="true">${i + 1}</span>`
     ).join('\n');
 
-    // 使用 base64 编码存储原始代码 (使用 btoa 兼容浏览器环境)
-    const codeDataAttr = btoa(unescape(encodeURIComponent(trimmedCode)));
+    // 使用 base64 编码存储原始代码 (兼容 Node.js 和浏览器环境)
+    const codeDataAttr = Buffer.from(trimmedCode, 'utf-8').toString('base64');
 
     // 构建完整的代码块 HTML
     return `
@@ -144,7 +144,7 @@ async function highlightCodeBlock(code: string, language?: string): Promise<stri
     // Shiki 高亮失败时回退到普通代码块
     console.warn(`[markdownService] Shiki 高亮失败 (${rawLang}):`, error);
     const escapedCode = escapeHtml(trimmedCode);
-    const codeDataAttr = btoa(unescape(encodeURIComponent(trimmedCode)));
+    const codeDataAttr = Buffer.from(trimmedCode, 'utf-8').toString('base64');
 
     return `
       <div class="code-block-wrapper">
@@ -271,7 +271,7 @@ export async function markdownToHtml(
     processedMarkdown = processContentImages(markdown);
   }
 
-  // 提取并临时替换代码块 - 使用特殊 Unicode 标记避免被处理
+  // 提取并临时替换代码块 - 使用 HTML 注释标记避免被 Markdown 处理器处理
   const codeBlocks: Array<{ index: number; promise: Promise<string> }> = [];
   let codeBlockIndex = 0;
 
@@ -282,8 +282,8 @@ export async function markdownToHtml(
         index: codeBlockIndex,
         promise: highlightCodeBlock(code, language),
       });
-      // 使用特殊 Unicode 标记，不会被 Markdown 处理器处理
-      const placeholder = `⦅CODE_BLOCK_${codeBlockIndex}⦆`;
+      // 使用 HTML 注释作为占位符，不会被 Markdown 处理器处理为段落
+      const placeholder = `<!--CODE_BLOCK_${codeBlockIndex}-->`;
       codeBlockIndex++;
       return placeholder;
     }
@@ -310,7 +310,7 @@ export async function markdownToHtml(
     // 恢复代码块（替换占位符为高亮后的 HTML）
     for (const { index, promise } of codeBlocks) {
       const highlightedCode = await promise;
-      const placeholder = `⦅CODE_BLOCK_${index}⦆`;
+      const placeholder = `<!--CODE_BLOCK_${index}-->`;
       html = html.replace(placeholder, highlightedCode);
     }
 
@@ -338,7 +338,7 @@ export function processMarkdown(content: string): string {
       const lang = language ? escapeHtml(language) : '';
       const escapedCode = escapeHtml(trimmedCode);
       const langLabel = lang ? `<div class="code-language">${lang}</div>` : '';
-      const codeDataAttr = btoa(unescape(encodeURIComponent(trimmedCode)));
+      const codeDataAttr = Buffer.from(trimmedCode, 'utf-8').toString('base64');
 
       // 计算行号
       const lines = trimmedCode.split('\n');

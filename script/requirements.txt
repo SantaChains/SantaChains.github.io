@@ -1,2 +1,11 @@
 Pillow>=10.0.0
 PyQt5>=5.15.0
+
+# 脚本说明:
+# 1. converter.py - 图片格式转换GUI工具 (支持多种格式互转)
+# 2. md_banner_avif_manager.py - MD Banner AVIF智能管理工具 (GUI+CLI双模式)
+# 3. cleanup_original_images.py - 清理已转换为AVIF的原图片文件
+#
+# 使用流程:
+#   1. 运行 md_banner_avif_manager.py 将banner图片转换为AVIF
+#   2. 运行 cleanup_original_images.py 删除原文件 (建议先加 -d 参数试运行)

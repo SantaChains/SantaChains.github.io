@@ -1,5 +1,11 @@
 ---
+title: RUST核心特色
 banner: "images/rust.avif"
+category: 技术
+tags:
+  - Rust
+  - 编程语言
+draft: false
 ---
 # RUST核心特色
 

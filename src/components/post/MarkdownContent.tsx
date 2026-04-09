@@ -86,10 +86,16 @@ export function MarkdownContent({ content, className = '' }: MarkdownContentProp
     copyButtons.forEach((btn) => {
       const button = btn as HTMLElement;
       const codeData = button.dataset.code || '';
-      // 解码 base64 获取原始代码
+      // 解码 base64 获取原始代码 (兼容中文)
       let code = '';
       try {
-        code = decodeURIComponent(escape(atob(codeData)));
+        // 使用 TextDecoder 正确解码 UTF-8 字符串
+        const binaryString = atob(codeData);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        code = new TextDecoder('utf-8').decode(bytes);
       } catch {
         // 如果解码失败，尝试直接解码
         try {

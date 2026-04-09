@@ -1,5 +1,12 @@
 ---
+title: Dijkstra算法：从经典理论到前沿突破的完整剖析
 banner: "images/person6.avif"
+category: 技术
+tags:
+  - 算法
+  - 图论
+  - 计算机科学
+draft: false
 ---
 # Dijkstra算法：从经典理论到前沿突破的完整剖析
 

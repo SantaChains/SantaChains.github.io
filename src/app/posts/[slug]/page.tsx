@@ -15,6 +15,7 @@ import { ArrowLeft, ArrowRight, Calendar, Clock, FolderOpen, Tag, RefreshCw } fr
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { TableOfContents } from '@/components/post/TableOfContents';
 import { ReadingProgress } from '@/components/post/ReadingProgress';
+import { PostContent } from '@/components/post/PostContent';
 
 // 从业务逻辑层导入
 import {
@@ -298,10 +299,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-8 lg:gap-12">
             {/* 左侧：文章内容 */}
             <article className="min-w-0">
-              <div
-                className="markdown-content"
-                dangerouslySetInnerHTML={{ __html: processedContent }}
-              />
+              <PostContent htmlContent={processedContent} />
 
               {/* 文章导航 */}
               <PostNavigation prev={prev} next={next} />

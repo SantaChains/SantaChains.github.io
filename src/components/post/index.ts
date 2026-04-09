@@ -3,3 +3,4 @@ export { TableOfContents } from './TableOfContents';
 export { CodeBlock } from './CodeBlock';
 export { PostCard } from './PostCard';
 export { ReadingProgress, CircularReadingProgress } from './ReadingProgress';
+export { PostContent } from './PostContent';
