@@ -21,6 +21,9 @@ import { codeToHtml } from 'shiki';
 import type { PostMeta } from '@/lib/data/types';
 import { processContentImages } from '@/lib/data/posts';
 
+// GitHub Pages 项目站点的 basePath
+const BASE_PATH = '/SantaChains.github.io';
+
 // ============================================
 // 类型定义
 // ============================================
@@ -214,10 +217,10 @@ export function transformWikiLinksToHtml(content: string, posts: PostMeta[]): st
     }
 
     if (exists && finalSlug) {
-      return `<a href="/posts/${escapeHtml(encodeURIComponent(finalSlug))}" class="wikilink">${linkText}</a>`;
+      return `<a href="${BASE_PATH}/posts/${escapeHtml(encodeURIComponent(finalSlug))}" class="wikilink">${linkText}</a>`;
     }
 
-    return `<a href="/posts/${escapeHtml(encodeURIComponent(targetSlug))}" class="wikilink wikilink-missing">${linkText}</a>`;
+    return `<a href="${BASE_PATH}/posts/${escapeHtml(encodeURIComponent(targetSlug))}" class="wikilink wikilink-missing">${linkText}</a>`;
   });
 }
 
@@ -239,7 +242,7 @@ export function processObsidianLinks(content: string, posts: PostMeta[]): string
     const slug = titleToSlug.get(slugify(link)) || titleToSlug.get(slugify(link.replace(/\.md$/, '')));
 
     if (slug) {
-      return `[${linkText}](/posts/${escapeHtml(encodeURIComponent(slug))})`;
+      return `[${linkText}](${BASE_PATH}/posts/${escapeHtml(encodeURIComponent(slug))})`;
     }
 
     return linkText;
@@ -417,10 +420,15 @@ export function processMarkdown(content: string): string {
     (_, alt, src) => `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" class="markdown-image" loading="lazy" />`
   );
 
-  // 处理链接
+  // 处理链接（区分站内链接和外部链接）
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
-    (_, text, href) => `<a href="${escapeHtml(href)}" class="markdown-link" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`
+    (_, text, href) => {
+      // 外部链接：以 http/https 开头且非本站链接
+      const isExternal = /^https?:\/\//.test(href);
+      const targetAttr = isExternal ? ' target="_blank" rel="noopener noreferrer"' : '';
+      return `<a href="${escapeHtml(href)}" class="markdown-link"${targetAttr}>${escapeHtml(text)}</a>`;
+    }
   );
 
   // 处理引用块 (支持 > text 和 >text 两种格式)
@@ -429,7 +437,7 @@ export function processMarkdown(content: string): string {
     (_, text) => `<blockquote>${escapeHtml(text)}</blockquote>`
   );
 
-  // 处理任务列表
+  // 处理任务列表（必须在无序列表之前，避免被无序列表正则抢先匹配）
   html = html.replace(
     /^\s*[-*+] \[x\] (.*$)/gim,
     (_, text) => `<li class="task-list-item"><input type="checkbox" checked disabled /> ${escapeHtml(text)}</li>`
@@ -439,9 +447,9 @@ export function processMarkdown(content: string): string {
     (_, text) => `<li class="task-list-item"><input type="checkbox" disabled /> ${escapeHtml(text)}</li>`
   );
 
-  // 处理无序列表
+  // 处理无序列表（排除任务列表格式）
   html = html.replace(
-    /^\s*[-*+] (.*$)/gim,
+    /^\s*[-*+] (?!\[[x ]\] )(.*$)/gim,
     (_, text) => `<li class="list-item">${escapeHtml(text)}</li>`
   );
 

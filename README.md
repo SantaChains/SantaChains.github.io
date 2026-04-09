@@ -19,6 +19,10 @@
   <a href="https://santachains.github.io/santachains-blog/" target="_blank">🌸 在线预览</a>
 </p>
 
+<p align="center">
+  <img src="https://stone.professorlee.work/api/stone/vercel/next.js" alt="Stone Badge" />
+</p>
+
 ---
 
 ## ✨ 特色功能

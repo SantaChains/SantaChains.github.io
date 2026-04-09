@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   // 输出目录（与 deploy.yml 一致）
   distDir: 'dist',
 
+  // GitHub Pages 项目站点需要设置 basePath
+  // 仓库名即为 basePath，确保资源路径正确
+  basePath: '/SantaChains.github.io',
+  assetPrefix: '/SantaChains.github.io',
+
   // 图片优化配置
   // 注意：静态导出时必须设置 unoptimized: true
   images: {
