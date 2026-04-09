@@ -74,4 +74,4 @@ package.json.bak
 
 # Obsidian - 只保留配置，忽略个人状态
 .obsidian/
-
+.vscode/

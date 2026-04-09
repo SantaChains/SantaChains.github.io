@@ -8,6 +8,15 @@ export const metadata: Metadata = {
   title: "SantaChains Blog",
   description: "在川端康成的雪国里，每一粒雪晶都是未完成的诗篇",
   metadataBase: new URL('https://santachains.github.io'),
+  icons: {
+    icon: [
+      { url: '/icons/favicon.ico', sizes: '32x32' },
+      { url: '/icons/favicon-192.png', sizes: '192x192' },
+    ],
+    apple: [
+      { url: '/icons/apple-touch-icon.png', sizes: '180x180' },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -18,6 +27,8 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
+        {/* Web App Manifest */}
+        <link rel="manifest" href="/icons/site.webmanifest" />
         {/* Content Security Policy */}
         <meta
           httpEquiv="Content-Security-Policy"

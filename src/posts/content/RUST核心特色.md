@@ -8,7 +8,7 @@ category: 技术
 tags:
   - rust
 excerpt: 总结rust最核心的属性,并思考使用方向
-banner: "images/rustprograming.png"
+banner: images/rust.png
 readingTime: true
 ---
 

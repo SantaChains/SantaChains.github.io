@@ -87,6 +87,9 @@
   --color-accent-red: var(--accent-red);
   --color-accent-green: var(--accent-green);
   --color-accent-purple: var(--accent-purple);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-accent-yellow: var(--accent-yellow);
   --color-paper-warm: var(--paper-warm);
   --color-ink-wash: var(--ink-wash);
 }
@@ -95,43 +98,13 @@
    川端康成文学色彩系统
    ============================================ */
 
+/* ---------- 基础变量 ---------- */
 :root {
   --radius: 0.75rem;
 
-  /* 樱花粉主题 - 浅色模式 */
-  /* WCAG AA 合规：所有文字对比度 >= 4.5:1 */
-  --background: #FFFAFB;
-  --foreground: #1A1A1A;
-  --card: #FFFFFF;
-  --card-foreground: #1A1A1A;
-  --popover: #FFFFFF;
-  --popover-foreground: #1A1A1A;
-  --primary: #F8BBD9;
-  --primary-foreground: #4A2530;
-  --secondary: #FFF0F5;
-  --secondary-foreground: #4A4A4A;
-  --muted: #FFE8EE;
-  --muted-foreground: #5C5A5E;
-  --accent: #F8BBD9;
-  --accent-foreground: #4A2530;
-  --destructive: #FFB3D1;
-  --destructive-foreground: #1A1A1A;
-  --border: #F0E0E5;
-  --input: #F0E0E5;
-  --ring: #F8BBD9;
-  --chart-1: #F8BBD9;
-  --chart-2: #B8C5D6;
-  --chart-3: #B39DDB;
-  --chart-4: #D1A27D;
-  --chart-5: #7DCDFF;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #1A1A1A;
-  --sidebar-primary: #F8BBD9;
-  --sidebar-primary-foreground: #4A2530;
-  --sidebar-accent: #FFE8EE;
-  --sidebar-accent-foreground: #4A2530;
-  --sidebar-border: #F0E0E5;
-  --sidebar-ring: #F8BBD9;
+  /* 代码块颜色 */
+  --code-bg: #1A1A1A;
+  --code-text: #FFFAFB;
 
   /* 樱花粉专属色彩 */
   --bg-primary: #FFFAFB;
@@ -146,45 +119,45 @@
   --accent-yellow: #C89B68;
   --paper-warm: #FFFAFB;
   --ink-wash: #6B6B6B;
+
+  /* ---------- 浅色模式主题变量 ---------- */
+  /* WCAG AA 合规：所有文字对比度 >= 4.5:1 */
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+  --card: #FFFFFF;
+  --card-foreground: var(--text-primary);
+  --popover: #FFFFFF;
+  --popover-foreground: var(--text-primary);
+  --primary: var(--accent-red);
+  --primary-foreground: #4A2530;
+  --secondary: #FFF0F5;
+  --secondary-foreground: var(--text-secondary);
+  --muted: #FFE8EE;
+  --muted-foreground: #5C5A5E;
+  --accent: var(--accent-red);
+  --accent-foreground: #4A2530;
+  --destructive: #FFB3D1;
+  --destructive-foreground: var(--text-primary);
+  --border: #F0E0E5;
+  --input: #F0E0E5;
+  --ring: var(--accent-red);
+  --chart-1: var(--accent-red);
+  --chart-2: #B8C5D6;
+  --chart-3: #B39DDB;
+  --chart-4: #D1A27D;
+  --chart-5: #7DCDFF;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--accent-red);
+  --sidebar-primary-foreground: #4A2530;
+  --sidebar-accent: #FFE8EE;
+  --sidebar-accent-foreground: #4A2530;
+  --sidebar-border: #F0E0E5;
+  --sidebar-ring: var(--accent-red);
 }
 
 .dark {
-  /* 樱花粉主题 - 深色模式 */
-  /* WCAG AA 合规：所有文字对比度 >= 4.5:1 */
-  --background: #121215;
-  --foreground: #E4E2E6;
-  --card: #1E1E22;
-  --card-foreground: #E4E2E6;
-  --popover: #1E1E22;
-  --popover-foreground: #E4E2E6;
-  --primary: #FFB3D1;
-  --primary-foreground: #1A1218;
-  --secondary: #2A2A30;
-  --secondary-foreground: #B8B6BC;
-  --muted: #2A2A30;
-  --muted-foreground: #8B8994;
-  --accent: #FFB3D1;
-  --accent-foreground: #1A1218;
-  --destructive: #FFCFDF;
-  --destructive-foreground: #1A1218;
-  --border: #2A2A30;
-  --input: #2A2A30;
-  --ring: #FFB3D1;
-  --chart-1: #FFB3D1;
-  --chart-2: #B8C5D6;
-  --chart-3: #C7B8FF;
-  --chart-4: #E0B892;
-  --chart-5: #9ED8FF;
-  --sidebar: #1E1E22;
-  --sidebar-foreground: #E4E2E6;
-  --sidebar-primary: #FFB3D1;
-  --sidebar-primary-foreground: #1A1218;
-  --sidebar-accent: #2A2A30;
-  --sidebar-accent-foreground: #B8B6BC;
-  --sidebar-border: #2A2A30;
-  --sidebar-ring: #FFB3D1;
-
-  /* 樱花粉专属色彩 - 深色模式 */
+  /* ---------- 深色模式专属色彩 ---------- */
   --bg-primary: #121215;
   --bg-dark: #1A1A1A;
   --text-primary: #E4E2E6;
@@ -197,9 +170,41 @@
   --accent-yellow: #D0A878;
   --paper-warm: #1E1E22;
   --ink-wash: #8B8994;
-  /* 代码块专用 - 固定值 */
-  --code-bg-dark: #1A1A1A;
-  --code-text-light: #FFFAFB;
+
+  /* ---------- 深色模式主题变量 ---------- */
+  /* WCAG AA 合规：所有文字对比度 >= 4.5:1 */
+  --background: var(--bg-primary);
+  --foreground: var(--text-primary);
+  --card: #1E1E22;
+  --card-foreground: var(--text-primary);
+  --popover: #1E1E22;
+  --popover-foreground: var(--text-primary);
+  --primary: var(--accent-red);
+  --primary-foreground: #1A1218;
+  --secondary: #2A2A30;
+  --secondary-foreground: #B8B6BC;
+  --muted: #2A2A30;
+  --muted-foreground: #8B8994;
+  --accent: var(--accent-red);
+  --accent-foreground: #1A1218;
+  --destructive: #FFCFDF;
+  --destructive-foreground: #1A1218;
+  --border: #2A2A30;
+  --input: #2A2A30;
+  --ring: var(--accent-red);
+  --chart-1: var(--accent-red);
+  --chart-2: #B8C5D6;
+  --chart-3: #C7B8FF;
+  --chart-4: #E0B892;
+  --chart-5: #9ED8FF;
+  --sidebar: #1E1E22;
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--accent-red);
+  --sidebar-primary-foreground: #1A1218;
+  --sidebar-accent: #2A2A30;
+  --sidebar-accent-foreground: #B8B6BC;
+  --sidebar-border: #2A2A30;
+  --sidebar-ring: var(--accent-red);
 }
 
 /* 系统级深色模式偏好 */
@@ -214,9 +219,15 @@
   }
 }
 
-/* 平滑过渡动画 */
-* {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+/* 平滑过渡动画 - 仅应用于主题相关属性，避免性能问题 */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+*,
+*::before,
+*::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 @layer base {
@@ -427,8 +438,8 @@
 }
 
 .prose pre {
-  background: #1A1A1A;
-  color: #FFFAFB;
+  background: var(--code-bg, #1A1A1A);
+  color: var(--code-text, #FFFAFB);
   padding: 1.5em;
   border-radius: 0.75em;
   overflow-x: auto;
@@ -916,8 +927,8 @@
 }
 
 .dark .prose pre {
-  background: #1A1A1A;
-  color: #FFFAFB;
+  background: var(--code-bg);
+  color: var(--code-text);
 }
 
 .dark .prose blockquote {
@@ -938,9 +949,9 @@
 .dark .text-gradient {
   background: linear-gradient(
     135deg,
-    #FFB3D1 0%,
-    #B8A8D8 50%,
-    #98A8E8 100%
+    var(--accent-red) 0%,
+    var(--accent-purple) 50%,
+    var(--accent-blue) 100%
   );
   background-size: 200% 200%;
   -webkit-background-clip: text;

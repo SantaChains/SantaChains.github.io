@@ -35,9 +35,10 @@ function getCardBannerPath(bannerPath: string | undefined): string | undefined {
 
 export function PostCard({ post, searchQuery }: PostCardProps) {
   const webBannerPath = getCardBannerPath(post.banner);
+  const postUrl = `/posts/${encodeURIComponent(post.fileName || post.slug)}`;
 
   return (
-    <Link href={`/posts/${encodeURIComponent(post.slug)}`}>
+    <Link href={postUrl}>
       <Card className="group cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-primary/20 border-0 bg-card/80 backdrop-blur-sm h-full">
         {webBannerPath && (
           <div className="relative h-48 overflow-hidden rounded-t-lg">

@@ -51,6 +51,8 @@ export interface Post {
   banner?: string;
   /** 是否显示阅读时间 */
   readingTime: boolean;
+  /** 源文件名（不含扩展名，用于静态生成 URL） */
+  fileName?: string;
 }
 
 /**

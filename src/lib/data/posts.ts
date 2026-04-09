@@ -446,7 +446,7 @@ export function readPostFile(slugOrFileName: string): string {
  * @param fileContent 文件内容
  * @returns 解析后的文章数据
  */
-export function parsePost(fileSlug: string, fileContent: string): Post {
+export function parsePost(fileSlug: string, fileContent: string, fileName?: string): Post {
   const { data, content } = matter(fileContent);
   const frontmatter = data as PostFrontmatter;
 
@@ -480,6 +480,8 @@ export function parsePost(fileSlug: string, fileContent: string): Post {
     banner,
     readingTime: frontmatter.readingTime !== false,
     content: processedContent,
+    // 保存实际文件名（不含扩展名），用于静态生成 URL
+    fileName: fileName || fileSlug,
   };
 }
 
@@ -487,10 +489,11 @@ export function parsePost(fileSlug: string, fileContent: string): Post {
  * 解析文章元数据（不包含内容）
  * @param slug 文章 slug
  * @param fileContent 文件内容
+ * @param fileName 文件名（不含扩展名）
  * @returns 文章元数据
  */
-export function parsePostMeta(slug: string, fileContent: string): PostMeta {
-  const post = parsePost(slug, fileContent);
+export function parsePostMeta(slug: string, fileContent: string, fileName?: string): PostMeta {
+  const post = parsePost(slug, fileContent, fileName);
   const { content: _content, ...meta } = post;
   void _content;
   return meta;
@@ -540,7 +543,8 @@ export function getAllPosts(includeDrafts: boolean = false): Post[] {
       const slug = fileName.replace(/\.md$/, '');
       try {
         const content = readPostFile(slug);
-        return parsePost(slug, content);
+        // 传入文件名（不含扩展名）用于静态生成 URL
+        return parsePost(slug, content, slug);
       } catch (error) {
         console.error(`[posts] 解析文章失败: ${slug}`, error);
         return null;

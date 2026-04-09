@@ -93,8 +93,9 @@ interface PostListItemProps {
 }
 
 function PostListItem({ post, searchQuery }: PostListItemProps) {
+  const postUrl = `/posts/${encodeURIComponent(post.fileName || post.slug)}`;
   return (
-    <Link href={`/posts/${encodeURIComponent(post.slug)}`}>
+    <Link href={postUrl}>
       <article className="group p-4 rounded-lg bg-card/50 hover:bg-card transition-colors border border-transparent hover:border-border">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <span className="text-sm text-muted-foreground whitespace-nowrap">

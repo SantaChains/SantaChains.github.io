@@ -46,14 +46,15 @@ interface PostPageProps {
 
 /**
  * 生成所有静态路径
- * 注意：静态导出时需要返回 URL 编码后的 slug
- * 开发模式下 Next.js 会比较编码后的 URL 路径
+ * 注意：静态导出时需要使用文件名（fileName）而非 slug
+ * 因为 URL 路径是基于文件名的，这样可以避免 slug 与文件名不一致的问题
  */
 export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
   const posts = getAllPostMetas();
   return posts.map((post) => ({
-    // 返回 URL 编码后的 slug，与 URL 路径匹配
-    slug: encodeURIComponent(post.slug),
+    // 使用实际文件名（不含扩展名）作为 URL 路径
+    // 这确保了 URL 与生成的文件名一致
+    slug: encodeURIComponent(post.fileName || post.slug),
   }));
 }
 

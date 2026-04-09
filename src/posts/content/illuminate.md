@@ -8,7 +8,7 @@ category: 随笔
 tags:
   - 关于我
 excerpt: 把能烧毁的全然焚烬
-banner: "images/example.jpg"
+banner: "images/IMG_418.png"
 readingTime: true
 ---
 
@@ -21,7 +21,8 @@ Hei~ there! Jliu Pureey. mediocre. labyrinth.
 
 > 平庸的码客，败兴的文人，灵感的囚徒。
 
-![暴走](sample.jpg)
+
+![Nothing](IMG_555.jpg)
 
 ---
 
