@@ -1,6 +1,6 @@
 ---
 title: 知识锁创意与合作小甜点
-slug: Metroidbrainia
+slug: metroidbrainia
 created: 2026-04-05T14:32
 updated: 2026-04-06T21:52
 draft: false
@@ -10,11 +10,9 @@ tags:
   - 独立游戏
   - 游戏设计
 excerpt: 知识锁游戏设计精髓 + 小团队独立开发成本控制指南
-banner: "images/example.jpg"
+banner: "images/example.avif"
 readingTime: true
 ---
-
-
 ## 什么是知识锁(Metroidbrainia)
 
 **核心定义**：非线性探索游戏中，**知识本身就是钥匙**——不是通过获得道具/能力，而是通过理解游戏世界的规则来解锁新区域。

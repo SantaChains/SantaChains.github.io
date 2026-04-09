@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Art Gallery | AI美术画廊</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a25;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --card-gap: 16px;
+            --column-count: 4;
+        }
+
+        @media (max-width: 1400px) { :root { --column-count: 4; } }
+        @media (max-width: 1100px) { :root { --column-count: 3; } }
+        @media (max-width: 768px) { :root { --column-count: 2; --card-gap: 12px; } }
+        @media (max-width: 480px) { :root { --column-count: 2; --card-gap: 8px; } }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header - Fixed */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            transform: translateZ(0);
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav { display: flex; gap: 2rem; }
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+        nav a:hover { color: var(--text-primary); }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 2rem 3rem;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(99, 102, 241, 0.12) 0%, transparent 50%);
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.25s ease;
+            will-change: transform;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent-gradient);
+            border-color: transparent;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* Waterfall Gallery - GPU Accelerated */
+        .gallery-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .waterfall {
+            position: relative;
+            width: 100%;
+            contain: layout style paint;
+        }
+
+        /* Art Card - Absolute Positioned for Waterfall */
+        .art-card {
+            position: absolute;
+            width: calc((100% - (var(--column-count) - 1) * var(--card-gap)) / var(--column-count));
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.35s ease,
+                        opacity 0.3s ease;
+            will-change: transform, opacity;
+            contain: layout style;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .art-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .art-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.4);
+            z-index: 10;
+        }
+
+        /* Image Container with Aspect Ratio Preservation */
+        .art-image-wrapper {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, #1e1e2e 100%);
+        }
+
+        .art-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .art-image-wrapper img.loaded {
+            opacity: 1;
+        }
+
+        .art-card:hover .art-image-wrapper img {
+            transform: scale(1.05);
+        }
+
+        /* Skeleton Loading Animation */
+        .skeleton {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, 
+                var(--bg-card) 0%, 
+                #252535 50%, 
+                var(--bg-card) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .art-image-wrapper img.loaded + .skeleton {
+            display: none;
+        }
+
+        /* Card Info */
+        .art-info {
+            padding: 1rem;
+        }
+
+        .art-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .art-prompt {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .art-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+
+        .art-model {
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .art-date { color: var(--text-secondary); }
+
+        /* Virtual Scroll Sentinel */
+        .scroll-sentinel {
+            position: absolute;
+            bottom: 1000px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            pointer-events: none;
+        }
+
+        /* Loading Indicator */
+        .loading-more {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-more.visible { opacity: 1; }
+
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            .art-card, .art-image-wrapper img, .filter-btn {
+                transition: none;
+            }
+            .skeleton { animation: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">AI Gallery</div>
+            <nav>
+                <a href="#gallery">画廊</a>
+                <a href="#about">关于</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>AI Art Gallery</h1>
+        <p>探索人工智能创造的视觉奇观</p>
+        <div class="filter-bar">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="landscape">风景</button>
+            <button class="filter-btn" data-filter="portrait">人物</button>
+            <button class="filter-btn" data-filter="abstract">抽象</button>
+            <button class="filter-btn" data-filter="concept">概念</button>
+        </div>
+    </section>
+
+    <main class="gallery-container" id="gallery">
+        <div class="waterfall" id="waterfall"></div>
+        <div class="scroll-sentinel" id="sentinel"></div>
+        <div class="loading-more" id="loadingMore">
+            <span class="spinner"></span>加载更多...
+        </div>
+    </main>
+
+    <footer id="about">
+        <p>AI Art Gallery © 2024 | 用算法绘制想象</p>
+    </footer>
+
+    <script>
+    /**
+     * 高性能瀑布流画廊 - 算法优化版
+     * 
+     * 核心算法:
+     * 1. 贪心算法 - 每次将图片放入高度最小的列
+     * 2. 二分查找 - 快速定位可见区域卡片
+     * 3. 虚拟滚动 - 只渲染视口内及缓冲区的卡片
+     * 4. RAF调度 - 使用requestAnimationFrame批量处理DOM
+     */
+    class WaterfallGallery {
+        constructor(containerId, options = {}) {
+            this.container = document.getElementById(containerId);
+            this.sentinel = document.getElementById('sentinel');
+            this.loadingMore = document.getElementById('loadingMore');
+            
+            // 配置
+            this.options = {
+                gap: 16,
+                batchSize: 20,
+                bufferSize: 5, // 上下缓冲区行数
+                preloadDistance: 500,
+                ...options
+            };
+            
+            // 状态
+            this.items = []; // 所有数据
+            this.columns = []; // 每列高度
+            this.columnCount = this.getColumnCount();
+            this.cardElements = new Map(); // id -> element
+            this.visibleRange = { start: 0, end: 0 };
+            this.isLoading = false;
+            this.hasMore = true;
+            this.rafId = null;
+            this.resizeObserver = null;
+            this.intersectionObserver = null;
+            
+            // 初始化
+            this.init();
+        }
+        
+        init() {
+            this.setupObservers();
+            this.bindEvents();
+            this.loadMore();
+        }
+        
+        // 获取当前列数
+        getColumnCount() {
+            const width = window.innerWidth;
+            if (width >= 1400) return 4;
+            if (width >= 1100) return 3;
+            if (width >= 480) return 2;
+            return 2;
+        }
+        
+        // 计算列宽
+        getColumnWidth() {
+            const containerWidth = this.container.offsetWidth;
+            return (containerWidth - (this.columnCount - 1) * this.options.gap) / this.columnCount;
+        }
+        
+        /**
+         * 贪心算法 - 找到高度最小的列
+         * 时间复杂度: O(n) 其中n为列数
+         */
+        getShortestColumn() {
+            let minIndex = 0;
+            let minHeight = this.columns[0];
+            for (let i = 1; i < this.columns.length; i++) {
+                if (this.columns[i] < minHeight) {
+                    minHeight = this.columns[i];
+                    minIndex = i;
+                }
+            }
+            return minIndex;
+        }
+        
+        /**
+         * 二分查找 - 快速定位可见区域
+         * 时间复杂度: O(log n)
+         */
+        findVisibleRange() {
+            const scrollTop = window.scrollY;
+            const viewportHeight = window.innerHeight;
+            const buffer = this.options.bufferSize * 300; // 估算行高
+            
+            const visibleTop = scrollTop - buffer;
+            const visibleBottom = scrollTop + viewportHeight + buffer;
+            
+            // 二分查找起始位置
+            let start = this.binarySearchY(visibleTop);
+            let end = this.binarySearchY(visibleBottom);
+            
+            // 扩展范围确保覆盖
+            start = Math.max(0, start - this.options.batchSize);
+            end = Math.min(this.items.length, end + this.options.batchSize);
+            
+            return { start, end };
+        }
+        
+        binarySearchY(targetY) {
+            let left = 0, right = this.items.length - 1;
+            while (left <= right) {
+                const mid = (left + right) >>> 1;
+                const item = this.items[mid];
+                if (item.y + item.height < targetY) {
+                    left = mid + 1;
+                } else {
+                    right = mid - 1;
+                }
+            }
+            return left;
+        }
+        
+        // 设置观察器
+        setupObservers() {
+            // 无限滚动观察器
+            this.intersectionObserver = new IntersectionObserver(
+                (entries) => {
+                    if (entries[0].isIntersecting && !this.isLoading && this.hasMore) {
+                        this.loadMore();
+                    }
+                },
+                { rootMargin: '200px' }
+            );
+            this.intersectionObserver.observe(this.sentinel);
+            
+            // 尺寸变化观察器
+            this.resizeObserver = new ResizeObserver(
+                this.debounce(() => this.onResize(), 200)
+            );
+            this.resizeObserver.observe(this.container);
+        }
+        
+        // 防抖函数
+        debounce(fn, delay) {
+            let timer;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+        
+        // 事件绑定
+        bindEvents() {
+            let ticking = false;
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        this.onScroll();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            }, { passive: true });
+            
+            // 筛选按钮
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    this.filter(e.target.dataset.filter);
+                });
+            });
+        }
+        
+        // 生成模拟数据
+        generateData(count, offset = 0) {
+            const categories = ['landscape', 'portrait', 'abstract', 'concept'];
+            const models = ['Midjourney', 'Stable Diffusion', 'DALL-E 3', 'Leonardo'];
+            const prompts = [
+                'Floating islands with waterfalls in the clouds, digital art',
+                'Cyberpunk cityscape at night, neon reflections on wet streets',
+                'Ethereal portrait surrounded by cherry blossoms, pastel colors',
+                'Cosmic nebula forming a phoenix, vibrant purples and golds',
+                'Ancient Greek temple floating in sky, golden hour lighting',
+                'Majestic dragon soaring through storm clouds, bioluminescent',
+                'Crystal ocean waves frozen in time, hyperrealistic textures',
+                'Mechanical butterfly with clockwork wings, steampunk aesthetic',
+                'Underwater city with bioluminescent coral, fantasy art',
+                'Samurai warrior in cherry blossom storm, anime style',
+                'Crystal cave with glowing gems, mystical atmosphere',
+                'Space station orbiting alien planet, sci-fi concept art'
+            ];
+            
+            return Array.from({ length: count }, (_, i) => {
+                const id = offset + i;
+                const aspectRatio = 0.7 + Math.random() * 0.8; // 0.7 - 1.5
+                return {
+                    id,
+                    title: `AI Artwork #${id + 1}`,
+                    prompt: prompts[Math.floor(Math.random() * prompts.length)],
+                    model: models[Math.floor(Math.random() * models.length)],
+                    category: categories[Math.floor(Math.random() * categories.length)],
+                    aspectRatio,
+                    width: 400,
+                    height: Math.floor(400 / aspectRatio),
+                    date: '2024.01',
+                    x: 0,
+                    y: 0
+                };
+            });
+        }
+        
+        // 加载更多数据
+        async loadMore() {
+            if (this.isLoading) return;
+            this.isLoading = true;
+            this.loadingMore.classList.add('visible');
+            
+            // 模拟API延迟
+            await new Promise(r => setTimeout(r, 300));
+            
+            const newItems = this.generateData(this.options.batchSize, this.items.length);
+            
+            if (newItems.length === 0) {
+                this.hasMore = false;
+                this.loadingMore.classList.remove('visible');
+                this.isLoading = false;
+                return;
+            }
+            
+            this.addItems(newItems);
+            this.isLoading = false;
+            this.loadingMore.classList.remove('visible');
+        }
+        
+        /**
+         * 添加新物品并计算位置
+         * 使用贪心算法确保各列高度平衡
+         */
+        addItems(newItems) {
+            const columnWidth = this.getColumnWidth();
+            const startIndex = this.items.length;
+            
+            // 初始化列高度（首次）
+            if (this.columns.length === 0) {
+                this.columns = new Array(this.columnCount).fill(0);
+            }
+            
+            // 计算每个新物品的位置
+            newItems.forEach((item, index) => {
+                const colIndex = this.getShortestColumn();
+                item.x = colIndex * (columnWidth + this.options.gap);
+                item.y = this.columns[colIndex];
+                item.column = colIndex;
+                
+                // 更新列高度
+                const cardHeight = this.calculateCardHeight(item.height, columnWidth);
+                this.columns[colIndex] += cardHeight + this.options.gap;
+            });
+            
+            this.items.push(...newItems);
+            
+            // 批量渲染
+            this.scheduleRender(startIndex, this.items.length);
+            
+            // 更新容器高度
+            this.updateContainerHeight();
+        }
+        
+        // 计算卡片高度（图片 + 信息区域）
+        calculateCardHeight(imgHeight, containerWidth) {
+            const scale = containerWidth / 400;
+            const scaledImgHeight = imgHeight * scale;
+            const infoHeight = 110; // 标题+描述+元信息
+            return scaledImgHeight + infoHeight;
+        }
+        
+        // 调度渲染 - 使用RAF批量处理
+        scheduleRender(start, end) {
+            if (this.rafId) cancelAnimationFrame(this.rafId);
+            
+            this.rafId = requestAnimationFrame(() => {
+                this.renderRange(start, end);
+            });
+        }
+        
+        // 渲染指定范围的卡片
+        renderRange(start, end) {
+            const fragment = document.createDocumentFragment();
+            const columnWidth = this.getColumnWidth();
+            
+            for (let i = start; i < end; i++) {
+                const item = this.items[i];
+                const card = this.createCard(item, columnWidth);
+                fragment.appendChild(card);
+                this.cardElements.set(item.id, card);
+                
+                // 延迟显示动画
+                setTimeout(() => card.classList.add('visible'), i * 30);
+            }
+            
+            this.container.appendChild(fragment);
+        }
+        
+        // 创建卡片元素
+        createCard(item, columnWidth) {
+            const card = document.createElement('article');
+            card.className = 'art-card';
+            card.dataset.id = item.id;
+            card.dataset.category = item.category;
+            
+            // 使用transform进行GPU加速定位
+            const scale = columnWidth / item.width;
+            const scaledHeight = item.height * scale;
+            
+            card.style.transform = `translate3d(${item.x}px, ${item.y}px, 0)`;
+            card.style.width = `${columnWidth}px`;
+            
+            card.innerHTML = `
+                <div class="art-image-wrapper" style="height:${scaledHeight}px">
+                    <div class="skeleton"></div>
+                    <img data-src="https://picsum.photos/400/${item.height}?random=${item.id}" 
+                         alt="${item.title}"
+                         loading="lazy">
+                </div>
+                <div class="art-info">
+                    <h3 class="art-title">${item.title}</h3>
+                    <p class="art-prompt">${item.prompt}</p>
+                    <div class="art-meta">
+                        <span class="art-model">${item.model}</span>
+                        <span class="art-date">${item.date}</span>
+                    </div>
+                </div>
+            `;
+            
+            // 懒加载图片
+            const img = card.querySelector('img');
+            this.observeImage(img);
+            
+            return card;
+        }
+        
+        // 图片懒加载观察器
+        observeImage(img) {
+            const imgObserver = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            this.loadImage(img);
+                            imgObserver.unobserve(img);
+                        }
+                    });
+                },
+                { rootMargin: `${this.options.preloadDistance}px` }
+            );
+            imgObserver.observe(img);
+        }
+        
+        // 加载图片
+        loadImage(img) {
+            const src = img.dataset.src;
+            if (!src) return;
+            
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                img.src = src;
+                img.classList.add('loaded');
+            };
+            tempImg.onerror = () => {
+                // 加载失败显示占位符
+                img.style.opacity = '1';
+                img.style.background = 'linear-gradient(135deg, #1a1a25 0%, #252535 100%)';
+            };
+            tempImg.src = src;
+        }
+        
+        // 更新容器高度
+        updateContainerHeight() {
+            const maxHeight = Math.max(...this.columns);
+            this.container.style.height = `${maxHeight}px`;
+            
+            // 更新sentinel位置
+            this.sentinel.style.top = `${maxHeight - 1000}px`;
+        }
+        
+        // 滚动处理 - 虚拟滚动
+        onScroll() {
+            // 可以在这里添加视口外卡片卸载逻辑
+            // 当前实现保留所有卡片，适用于中等数据量
+        }
+        
+        // 尺寸变化处理
+        onResize() {
+            const newColumnCount = this.getColumnCount();
+            if (newColumnCount !== this.columnCount) {
+                this.columnCount = newColumnCount;
+                this.reflow();
+            }
+        }
+        
+        /**
+         * 重新布局 - 当列数变化时
+         * 重新计算所有物品位置
+         */
+        reflow() {
+            // 重置列高度
+            this.columns = new Array(this.columnCount).fill(0);
+            const columnWidth = this.getColumnWidth();
+            
+            // 重新计算所有位置
+            this.items.forEach(item => {
+                const colIndex = this.getShortestColumn();
+                item.x = colIndex * (columnWidth + this.options.gap);
+                item.y = this.columns[colIndex];
+                item.column = colIndex;
+                
+                const cardHeight = this.calculateCardHeight(item.height, columnWidth);
+                this.columns[colIndex] += cardHeight + this.options.gap;
+                
+                // 更新DOM
+                const card = this.cardElements.get(item.id);
+                if (card) {
+                    card.style.transform = `translate3d(${item.x}px, ${item.y}px, 0)`;
+                    card.style.width = `${columnWidth}px`;
+                    
+                    // 更新图片高度
+                    const wrapper = card.querySelector('.art-image-wrapper');
+                    const scale = columnWidth / item.width;
+                    wrapper.style.height = `${item.height * scale}px`;
+                }
+            });
+            
+            this.updateContainerHeight();
+        }
+        
+        // 筛选功能
+        filter(category) {
+            this.cardElements.forEach((card, id) => {
+                const item = this.items.find(i => i.id === id);
+                if (!item) return;
+                
+                if (category === 'all' || item.category === category) {
+                    card.style.display = 'block';
+                    setTimeout(() => card.classList.add('visible'), 10);
+                } else {
+                    card.classList.remove('visible');
+                    setTimeout(() => card.style.display = 'none', 300);
+                }
+            });
+        }
+        
+        // 销毁
+        destroy() {
+            if (this.resizeObserver) this.resizeObserver.disconnect();
+            if (this.intersectionObserver) this.intersectionObserver.disconnect();
+            if (this.rafId) cancelAnimationFrame(this.rafId);
+        }
+    }
+    
+    // 初始化画廊
+    document.addEventListener('DOMContentLoaded', () => {
+        window.gallery = new WaterfallGallery('waterfall', {
+            gap: 16,
+            batchSize: 20,
+            bufferSize: 3,
+            preloadDistance: 800
+        });
+    });
+    </script>
+</body>
+</html>

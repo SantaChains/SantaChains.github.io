@@ -1,6 +1,10 @@
 # SantaChains - 川端康成风格的个人博客
 
 <p align="center">
+<strong>作者：SantaChains</strong>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Next.js-15.4.4-black?style=flat-square&logo=next.js" alt="Next.js">
   <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript" alt="TypeScript">
   <img src="https://img.shields.io/badge/Tailwind-3.4-cyan?style=flat-square&logo=tailwindcss" alt="Tailwind CSS">
@@ -50,17 +54,17 @@
 
 ## 🛠️ 技术栈
 
-| 技术 | 用途 |
-|------|------|
-| **Next.js 15.4.4** | React框架，支持App Router |
-| **TypeScript 5.x** | 类型安全的JavaScript |
-| **Tailwind CSS 4.x** | 实用优先的CSS框架 |
-| **shadcn/ui** | 精美的React组件库 |
-| **Framer Motion** | 流畅的动画效果 |
-| **Canvas API** | 高性能粒子系统 |
-| **Radix UI** | 无障碍UI组件基础 |
-| **Remark** | Markdown解析与处理 |
-| **Turbopack** | 下一代打包工具（开发模式） |
+| 技术                 | 用途                       |
+|----------------------|----------------------------|
+| **Next.js 15.4.4**   | React框架，支持App Router  |
+| **TypeScript 5.x**   | 类型安全的JavaScript       |
+| **Tailwind CSS 4.x** | 实用优先的CSS框架          |
+| **shadcn/ui**        | 精美的React组件库          |
+| **Framer Motion**    | 流畅的动画效果             |
+| **Canvas API**       | 高性能粒子系统             |
+| **Radix UI**         | 无障碍UI组件基础           |
+| **Remark**           | Markdown解析与处理         |
+| **Turbopack**        | 下一代打包工具（开发模式） |
 
 ---
 
@@ -72,11 +76,11 @@
 
 ### 色彩语言
 
-| 颜色 | 色值 | 寓意 |
-|------|------|------|
+| 颜色         | 色值      | 寓意                 |
+|--------------|-----------|----------------------|
 | 🌸 **樱花粉** | `#F8BBD9` | 代表生命的脆弱与美丽 |
 | 🌫️ **雾蓝色** | `#B8C5D6` | 象征雪国的宁静与深远 |
-| 📜 **宣纸白** | `#FEFEFE` | 承载文字的纯净背景 |
+| 📜 **宣纸白** | `#FEFEFE` | 承载文字的纯净背景   |
 
 ### 动效理念
 - **樱花飘落**：象征时间的流逝与生命的短暂
@@ -88,6 +92,8 @@
 ## 推荐配合obsidian使用
 **推荐插件**
 ![1775637410620](image/README/1775637410620.png)
+
+📖 **[查看详细使用指南](UASGE.md)** - 包含 Obsidian 配置、写作工作流、部署说明等完整教程
 
 ## 🚀 快速开始
 
@@ -109,15 +115,15 @@ npm run dev
 
 ### 可用命令
 
-| 命令 | 说明 |
-|------|------|
-| `npm run dev` | 启动开发服务器（Turbopack加速） |
-| `npm run build` | 构建生产版本 |
-| `npm run prebuild` | 复制图片资源到public目录 |
-| `npm start` | 启动生产服务器 |
-| `npm run lint` | 运行ESLint代码检查 |
-| `npm run verify` | 验证文章slug和图片完整性 |
-| `npm run copy-images` | 手动复制图片资源 |
+| 命令                  | 说明                            |
+|-----------------------|---------------------------------|
+| `npm run dev`         | 启动开发服务器（Turbopack加速） |
+| `npm run build`       | 构建生产版本                    |
+| `npm run prebuild`    | 复制图片资源到public目录        |
+| `npm start`           | 启动生产服务器                  |
+| `npm run lint`        | 运行ESLint代码检查              |
+| `npm run verify`      | 验证文章slug和图片完整性        |
+| `npm run copy-images` | 手动复制图片资源                |
 
 构建输出位于 `dist` 目录。
 
@@ -170,12 +176,12 @@ santachains-blog/
 
 本项目使用了以下中文字体：
 
-| 字体 | 文件 | 用途 |
-|------|------|------|
-| **Google Arima** | `Arima-Regular.ttf` | 标题和正文 |
-| **文泉微米黑** | `WenQuanWeiMiHei.ttf` | 正文内容 |
-| **仓耳今楷03** | `CangErJinKai03.ttf` | 首字下沉 |
-| **霞鹜文楷 Mono** | `LXGWWenKaiMono.ttf` | 代码块和等宽文本 |
+| 字体              | 文件                  | 用途             |
+|-------------------|-----------------------|------------------|
+| **Google Arima**  | `Arima-Regular.ttf`   | 标题和正文       |
+| **文泉微米黑**    | `WenQuanWeiMiHei.ttf` | 正文内容         |
+| **仓耳今楷03**    | `CangErJinKai03.ttf`  | 首字下沉         |
+| **霞鹜文楷 Mono** | `LXGWWenKaiMono.ttf`  | 代码块和等宽文本 |
 
 ---
 

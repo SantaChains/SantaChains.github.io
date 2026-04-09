@@ -102,15 +102,21 @@
 :root {
   --radius: 0.75rem;
 
-  /* 代码块颜色 */
-  --code-bg: #1A1A1A;
-  --code-text: #FFFAFB;
+  /* ============================================
+     GitHub 代码高亮主题变量
+     浅色模式: github-light | 深色模式: github-dark
+     ============================================ */
+  /* 代码块背景 - GitHub Light 主题 */
+  --code-bg: #ffffff;
+  --code-text: #24292f;
+  --code-border: #d0d7de;
+  --code-line-number: #6e7781;
+  --code-line-number-bg: #f6f8fa;
 
-  /* 樱花粉专属色彩 */
-  --bg-primary: #FFFAFB;
+  --bg-primary: #F5F5F0;
   --bg-dark: #1A1A1A;
-  --text-primary: #1A1A1A;
-  --text-secondary: #4A4A4A;
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
   --accent-red: #F8BBD9;
   --accent-green: #5B8B7A;
   --accent-purple: #9B7DB8;
@@ -118,7 +124,7 @@
   --accent-cyan: #6BB8D8;
   --accent-yellow: #C89B68;
   --paper-warm: #FFFAFB;
-  --ink-wash: #6B6B6B;
+  --ink-wash: #475569;
 
   /* ---------- 浅色模式主题变量 ---------- */
   /* WCAG AA 合规：所有文字对比度 >= 4.5:1 */
@@ -133,7 +139,7 @@
   --secondary: #FFF0F5;
   --secondary-foreground: var(--text-secondary);
   --muted: #FFE8EE;
-  --muted-foreground: #5C5A5E;
+  --muted-foreground: #475569;
   --accent: var(--accent-red);
   --accent-foreground: #4A2530;
   --destructive: #FFB3D1;
@@ -161,7 +167,7 @@
   --bg-primary: #121215;
   --bg-dark: #1A1A1A;
   --text-primary: #E4E2E6;
-  --text-secondary: #8B8994;
+  --text-secondary: #A1A1AA;
   --accent-red: #FFB3D1;
   --accent-green: #6B9B8B;
   --accent-purple: #B8A8D8;
@@ -170,6 +176,14 @@
   --accent-yellow: #D0A878;
   --paper-warm: #1E1E22;
   --ink-wash: #8B8994;
+  /* ============================================
+     GitHub Dark 主题代码块变量
+     ============================================ */
+  --code-bg: #0d1117;
+  --code-text: #c9d1d9;
+  --code-border: #30363d;
+  --code-line-number: #484f58;
+  --code-line-number-bg: #161b22;
 
   /* ---------- 深色模式主题变量 ---------- */
   /* WCAG AA 合规：所有文字对比度 >= 4.5:1 */
@@ -184,7 +198,7 @@
   --secondary: #2A2A30;
   --secondary-foreground: #B8B6BC;
   --muted: #2A2A30;
-  --muted-foreground: #8B8994;
+  --muted-foreground: #A1A1AA;
   --accent: var(--accent-red);
   --accent-foreground: #1A1218;
   --destructive: #FFCFDF;
@@ -529,12 +543,14 @@ html {
   color: var(--accent-red);
 }
 
-/* 代码块容器 */
+/* 代码块容器 - GitHub 主题适配 */
 .markdown-content .code-block-wrapper {
   position: relative;
   margin: 1.5em 0;
   border-radius: 0.75em;
   overflow: hidden;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
 }
 
 .markdown-content .code-block-wrapper:hover .code-copy-btn {
@@ -552,15 +568,71 @@ html {
   color: var(--muted-foreground);
   background: var(--muted);
   border-radius: 0 0 0.5rem 0.5rem;
-  z-index: 1;
+  z-index: 10;
   border: 1px solid var(--border);
   border-top: none;
 }
 
-/* 代码块 - 使用卡片背景色，与主题协调 */
+/* 代码块容器 - 包含行号和代码 */
+.markdown-content .code-block-container {
+  display: flex;
+  overflow-x: auto;
+  background: var(--code-bg);
+}
+
+/* 行号样式 - 不可选中 - GitHub 主题 */
+.markdown-content .line-numbers {
+  flex-shrink: 0;
+  padding: 1rem 0.75rem;
+  background: var(--code-line-number-bg);
+  border-right: 1px solid var(--code-border);
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.markdown-content .line-number {
+  display: block;
+  font-family: 'LXGWWenKaiMono', ui-monospace, monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--code-line-number);
+  min-width: 1.5rem;
+}
+
+/* 代码内容区域 */
+.markdown-content .code-content {
+  flex: 1;
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.markdown-content .code-content pre {
+  margin: 0;
+  padding: 1rem 1.5rem;
+  background: transparent !important;
+  overflow-x: auto;
+}
+
+.markdown-content .code-content pre code {
+  font-family: 'LXGWWenKaiMono', ui-monospace, monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  background: transparent;
+  padding: 0;
+}
+
+/* Shiki 高亮代码的样式覆盖 */
+.markdown-content .code-content .shiki {
+  background: transparent !important;
+}
+
+/* 兼容旧代码块样式 - GitHub 主题 */
 .markdown-content .code-block {
-  background: var(--card);
-  color: var(--card-foreground);
+  background: var(--code-bg);
+  color: var(--code-text);
   padding: 2em 1.5em 1.5em;
   border-radius: 0.75em;
   overflow-x: auto;
@@ -568,7 +640,7 @@ html {
   font-family: 'LXGWWenKaiMono', ui-monospace, monospace;
   font-size: 0.9em;
   line-height: 1.6;
-  border: 1px solid var(--border);
+  border: 1px solid var(--code-border);
 }
 
 .markdown-content .code-block code {
@@ -635,7 +707,7 @@ html {
   border-left: 4px solid var(--accent-red);
   padding-left: 1.5em;
   margin: 1.5em 0;
-  color: var(--ink-wash);
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -742,18 +814,23 @@ html {
   border: 1px solid var(--border);
 }
 
-.markdown-content .markdown-table {
+/* 通用表格样式（支持 unified pipeline 直接生成的 table） */
+.markdown-content table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95em;
   background: var(--paper-warm);
+  margin: 1.5em 0;
+  border-radius: 0.5em;
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
 
-.markdown-content .markdown-table thead {
+.markdown-content table thead {
   background: var(--paper-warm);
 }
 
-.markdown-content .markdown-table th {
+.markdown-content table th {
   padding: 0.75em 1em;
   font-weight: 600;
   color: var(--text-primary);
@@ -761,17 +838,17 @@ html {
   text-align: left;
 }
 
-.markdown-content .markdown-table td {
+.markdown-content table td {
   padding: 0.6em 1em;
   border-bottom: 1px solid var(--border);
   color: var(--text-primary);
 }
 
-.markdown-content .markdown-table tbody tr:last-child td {
+.markdown-content table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.markdown-content .markdown-table tbody tr:hover {
+.markdown-content table tbody tr:hover {
   background: var(--bg-primary);
 }
 
@@ -841,10 +918,11 @@ html {
   color: var(--accent-red);
 }
 
+/* 深色模式下的代码块 - 使用 CSS 变量自动适配 GitHub Dark */
 .dark .markdown-content .code-block {
-  background: var(--card);
-  color: var(--card-foreground);
-  border-color: var(--border);
+  background: var(--code-bg);
+  color: var(--code-text);
+  border-color: var(--code-border);
 }
 
 .dark .markdown-content blockquote {
@@ -886,29 +964,25 @@ html {
 }
 
 /* 深色模式下的表格 */
-.dark .markdown-content .table-wrapper {
-  border-color: var(--border);
-}
-
-.dark .markdown-content .markdown-table {
+.dark .markdown-content table {
   background: var(--paper-warm);
 }
 
-.dark .markdown-content .markdown-table thead {
+.dark .markdown-content table thead {
   background: var(--paper-warm);
 }
 
-.dark .markdown-content .markdown-table th {
+.dark .markdown-content table th {
   color: var(--text-primary);
   border-bottom-color: var(--border);
 }
 
-.dark .markdown-content .markdown-table td {
+.dark .markdown-content table td {
   border-bottom-color: var(--border);
   color: var(--text-primary);
 }
 
-.dark .markdown-content .markdown-table tbody tr:hover {
+.dark .markdown-content table tbody tr:hover {
   background: var(--bg-primary);
 }
 
@@ -989,6 +1063,64 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* ============================================
+   KaTeX 数学公式样式适配
+   ============================================ */
+
+/* 行内公式样式 */
+.markdown-content .katex {
+  font-size: 1.1em;
+  line-height: 1.2;
+}
+
+/* 块级公式样式 */
+.markdown-content .katex-display {
+  margin: 1.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* 公式容器 */
+.markdown-content .katex-display > .katex {
+  display: block;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 深色模式下的公式颜色 */
+.dark .markdown-content .katex {
+  color: var(--text-primary);
+}
+
+.dark .markdown-content .katex .katex-html {
+  color: var(--text-primary);
+}
+
+/* 公式中的文本颜色 */
+.dark .katex .text,
+.dark .katex .mathnormal,
+.dark .katex .mathrm,
+.dark .katex .mathbf,
+.dark .katex .mathit,
+.dark .katex .mathtt,
+.dark .katex .mathsf,
+.dark .katex .mathbb,
+.dark .katex .mathcal,
+.dark .katex .mathfrak,
+.dark .katex .mathscr {
+  color: var(--text-primary);
+}
+
+/* 公式错误提示样式 */
+.markdown-content .katex-error {
+  color: #cc0000;
+  background: rgba(204, 0, 0, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-family: monospace;
+  font-size: 0.9em;
 }
 
 /* 无障碍：减少动画 */

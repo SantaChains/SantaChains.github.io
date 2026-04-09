@@ -328,25 +328,42 @@ let slugToFileNameMap: Map<string, string> | null = null;
 /**
  * 构建 slug 到文件名的映射
  * 扫描所有文章文件，读取 frontmatter 中的 slug，建立映射关系
+ * 自动跳过草稿文件（draft: true）
  */
 function buildSlugToFileNameMap(): Map<string, string> {
   const postsDir = getPostsDirectory();
   const map = new Map<string, string>();
-  
-  const fileNames = fs.readdirSync(postsDir).filter(name => name.endsWith('.md'));
-  
-  fileNames.forEach(fileName => {
+
+  const entries = fs.readdirSync(postsDir, { withFileTypes: true });
+
+  entries.forEach(entry => {
+    // 跳过 drafts 目录
+    if (entry.isDirectory() && entry.name === 'drafts') {
+      return;
+    }
+
+    if (!entry.isFile() || !entry.name.endsWith('.md')) {
+      return;
+    }
+
+    const fileName = entry.name;
     const filePath = path.join(postsDir, fileName);
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const { data } = matter(fileContent);
-    
+
+    // 跳过标记为 draft: true 的文章
+    if (data.draft === true) {
+      console.log(`[posts] 跳过草稿文章: ${fileName}`);
+      return;
+    }
+
     const fileSlug = fileName.replace(/\.md$/, '');
     const frontmatterSlug = data.slug as string | undefined;
     const actualSlug = frontmatterSlug || fileSlug;
-    
+
     map.set(actualSlug, fileSlug);
   });
-  
+
   return map;
 }
 
@@ -389,7 +406,7 @@ function ensureDirectoryExists(dir: string): void {
 }
 
 /**
- * 获取所有文章文件名
+ * 获取所有文章文件名（自动跳过 drafts 文件夹）
  * @returns 文件名列表
  */
 export function getPostFileNames(): string[] {
@@ -397,7 +414,18 @@ export function getPostFileNames(): string[] {
 
   try {
     ensureDirectoryExists(postsDir);
-    return fs.readdirSync(postsDir).filter(name => name.endsWith('.md'));
+    const allFiles = fs.readdirSync(postsDir, { withFileTypes: true });
+
+    // 过滤出 .md 文件，并排除 drafts 子目录中的文件
+    return allFiles
+      .filter(entry => {
+        // 跳过 drafts 目录
+        if (entry.isDirectory() && entry.name === 'drafts') {
+          return false;
+        }
+        return entry.isFile() && entry.name.endsWith('.md');
+      })
+      .map(entry => entry.name);
   } catch (error) {
     if (error instanceof FileSystemError) throw error;
     throw new FileSystemError('无法读取文章目录', error);
@@ -543,6 +571,12 @@ export function getAllPosts(includeDrafts: boolean = false): Post[] {
       const slug = fileName.replace(/\.md$/, '');
       try {
         const content = readPostFile(slug);
+        // 快速检查 frontmatter 中的 draft 标记，避免完整解析草稿文章
+        const { data } = matter(content);
+        if (data.draft === true && !includeDrafts) {
+          console.log(`[posts] 跳过草稿文章: ${fileName}`);
+          return null;
+        }
         // 传入文件名（不含扩展名）用于静态生成 URL
         return parsePost(slug, content, slug);
       } catch (error) {
@@ -551,7 +585,6 @@ export function getAllPosts(includeDrafts: boolean = false): Post[] {
       }
     })
     .filter((post): post is Post => post !== null)
-    .filter(post => includeDrafts || !post.draft)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   cache.set(cacheKey, posts);

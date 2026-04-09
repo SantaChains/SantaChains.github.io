@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>博客配色方案对比</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #1a1a1a;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 30px;
+    }
+
+    .scheme-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .scheme-header {
+      padding: 20px;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .preview-area {
+      padding: 30px;
+      min-height: 200px;
+    }
+
+    .preview-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .preview-text {
+      font-size: 15px;
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+
+    .preview-link {
+      text-decoration: none;
+      border-bottom: 1px solid;
+    }
+
+    .preview-btn {
+      display: inline-block;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+
+    .color-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+    }
+
+    .color-swatch {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+
+    .color-info {
+      flex: 1;
+    }
+
+    .color-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .color-hex {
+      font-size: 12px;
+      color: #666;
+      font-family: monospace;
+    }
+
+    /* 当前配色 - 樱花粉 */
+    .current .scheme-header {
+      background: #F8BBD9;
+      color: #4A2530;
+    }
+
+    .current .preview-area {
+      background: #FFFAFB;
+    }
+
+    .current .preview-title {
+      color: #1A1A1A;
+    }
+
+    .current .preview-text {
+      color: #4A4A4A;
+    }
+
+    .current .preview-link {
+      color: #F8BBD9;
+      border-color: #F0E0E5;
+    }
+
+    .current .preview-btn {
+      background: #F8BBD9;
+      color: #4A2530;
+    }
+
+    /* 方案 A - 温暖中性 */
+    .warm .scheme-header {
+      background: #D97706;
+      color: white;
+    }
+
+    .warm .preview-area {
+      background: #FDFCF8;
+    }
+
+    .warm .preview-title {
+      color: #1C1917;
+    }
+
+    .warm .preview-text {
+      color: #57534E;
+    }
+
+    .warm .preview-link {
+      color: #D97706;
+      border-color: #E7E5E4;
+    }
+
+    .warm .preview-btn {
+      background: #D97706;
+      color: white;
+    }
+
+    /* 方案 B - 瑞士现代 */
+    .swiss .scheme-header {
+      background: #18181B;
+      color: white;
+    }
+
+    .swiss .preview-area {
+      background: #FAFAFA;
+    }
+
+    .swiss .preview-title {
+      color: #09090B;
+    }
+
+    .swiss .preview-text {
+      color: #3F3F46;
+    }
+
+    .swiss .preview-link {
+      color: #2563EB;
+      border-color: #E4E4E7;
+    }
+
+    .swiss .preview-btn {
+      background: #18181B;
+      color: white;
+    }
+
+    /* 方案 C - 莫兰迪灰 */
+    .morandi .scheme-header {
+      background: #78716C;
+      color: white;
+    }
+
+    .morandi .preview-area {
+      background: #F7F5F3;
+    }
+
+    .morandi .preview-title {
+      color: #292524;
+    }
+
+    .morandi .preview-text {
+      color: #57534E;
+    }
+
+    .morandi .preview-link {
+      color: #C2410C;
+      border-color: #E7E5E4;
+    }
+
+    .morandi .preview-btn {
+      background: #78716C;
+      color: white;
+    }
+
+    /* 方案 D - 雾蓝灰 */
+    .foggy .scheme-header {
+      background: #64748B;
+      color: white;
+    }
+
+    .foggy .preview-area {
+      background: #B8C5D6;
+    }
+
+    .foggy .preview-title {
+      color: #1E293B;
+    }
+
+    .foggy .preview-text {
+      color: #334155;
+    }
+
+    .foggy .preview-link {
+      color: #1E40AF;
+      border-color: #94A3B8;
+    }
+
+    .foggy .preview-btn {
+      background: #3B82F6;
+      color: white;
+    }
+
+    .recommendation {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #22c55e;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .scheme-card {
+      position: relative;
+    }
+
+    .pros-cons {
+      padding: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .pros-cons h4 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #555;
+    }
+
+    .pros-cons ul {
+      font-size: 13px;
+      color: #666;
+      padding-left: 18px;
+    }
+
+    .pros-cons li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 博客配色方案对比</h1>
+
+  <div class="container">
+    <!-- 当前配色 -->
+    <div class="scheme-card current">
+      <div class="scheme-header">当前配色 - 樱花粉文学主题</div>
+      <div class="preview-area">
+        <div class="preview-title">川端康成的文学世界</div>
+        <div class="preview-text">
+          穿过县界长长的隧道，便是雪国。夜空下一片白茫茫。火车在信号所前停了下来。
+        </div>
+        <a href="#" class="preview-link">阅读更多</a>
+        <div style="margin-top: 16px;">
+          <span class="preview-btn">开始阅读</span>
+        </div>
+      </div>
+      <div class="color-grid">
+        <div class="color-item">
+          <div class="color-swatch" style="background: #FFFAFB;"></div>
+          <div class="color-info">
+            <div class="color-name">背景色</div>
+            <div class="color-hex">#FFFAFB</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #1A1A1A;"></div>
+          <div class="color-info">
+            <div class="color-name">主文字</div>
+            <div class="color-hex">#1A1A1A</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #F8BBD9;"></div>
+          <div class="color-info">
+            <div class="color-name">强调色</div>
+            <div class="color-hex">#F8BBD9</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #5B8B7A;"></div>
+          <div class="color-info">
+            <div class="color-name">辅助绿</div>
+            <div class="color-hex">#5B8B7A</div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons">
+        <h4>特点</h4>
+        <ul>
+          <li>文学感强，有温度</li>
+          <li>粉色可能过于女性化</li>
+          <li>对比度略低</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 方案 A - 温暖中性 -->
+    <div class="scheme-card warm">
+      <div class="recommendation">推荐</div>
+      <div class="scheme-header">方案 A - 温暖中性</div>
+      <div class="preview-area">
+        <div class="preview-title">川端康成的文学世界</div>
+        <div class="preview-text">
+          穿过县界长长的隧道，便是雪国。夜空下一片白茫茫。火车在信号所前停了下来。
+        </div>
+        <a href="#" class="preview-link">阅读更多</a>
+        <div style="margin-top: 16px;">
+          <span class="preview-btn">开始阅读</span>
+        </div>
+      </div>
+      <div class="color-grid">
+        <div class="color-item">
+          <div class="color-swatch" style="background: #FDFCF8;"></div>
+          <div class="color-info">
+            <div class="color-name">暖白背景</div>
+            <div class="color-hex">#FDFCF8</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #1C1917;"></div>
+          <div class="color-info">
+            <div class="color-name">深炭文字</div>
+            <div class="color-hex">#1C1917</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #D97706;"></div>
+          <div class="color-info">
+            <div class="color-name">琥珀强调</div>
+            <div class="color-hex">#D97706</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #65A30D;"></div>
+          <div class="color-info">
+            <div class="color-name">鼠尾草绿</div>
+            <div class="color-hex">#65A30D</div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons">
+        <h4>特点</h4>
+        <ul>
+          <li>温暖但不偏女性化</li>
+          <li>琥珀色有活力</li>
+          <li>适合个人博客</li>
+          <li>自然舒适</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 方案 B - 瑞士现代 -->
+    <div class="scheme-card swiss">
+      <div class="scheme-header">方案 B - 瑞士现代主义</div>
+      <div class="preview-area">
+        <div class="preview-title">川端康成的文学世界</div>
+        <div class="preview-text">
+          穿过县界长长的隧道，便是雪国。夜空下一片白茫茫。火车在信号所前停了下来。
+        </div>
+        <a href="#" class="preview-link">阅读更多</a>
+        <div style="margin-top: 16px;">
+          <span class="preview-btn">开始阅读</span>
+        </div>
+      </div>
+      <div class="color-grid">
+        <div class="color-item">
+          <div class="color-swatch" style="background: #FAFAFA;"></div>
+          <div class="color-info">
+            <div class="color-name">纯白背景</div>
+            <div class="color-hex">#FAFAFA</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #09090B;"></div>
+          <div class="color-info">
+            <div class="color-name">纯黑文字</div>
+            <div class="color-hex">#09090B</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #18181B;"></div>
+          <div class="color-info">
+            <div class="color-name">深炭主色</div>
+            <div class="color-hex">#18181B</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #2563EB;"></div>
+          <div class="color-info">
+            <div class="color-name">经典蓝</div>
+            <div class="color-hex">#2563EB</div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons">
+        <h4>特点</h4>
+        <ul>
+          <li>专业、简洁</li>
+          <li>高对比度，可读性强</li>
+          <li>适合技术博客</li>
+          <li>略显冷淡</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 方案 C - 莫兰迪灰 -->
+    <div class="scheme-card morandi">
+      <div class="scheme-header">方案 C - 莫兰迪高级灰</div>
+      <div class="preview-area">
+        <div class="preview-title">川端康成的文学世界</div>
+        <div class="preview-text">
+          穿过县界长长的隧道，便是雪国。夜空下一片白茫茫。火车在信号所前停了下来。
+        </div>
+        <a href="#" class="preview-link">阅读更多</a>
+        <div style="margin-top: 16px;">
+          <span class="preview-btn">开始阅读</span>
+        </div>
+      </div>
+      <div class="color-grid">
+        <div class="color-item">
+          <div class="color-swatch" style="background: #F7F5F3;"></div>
+          <div class="color-info">
+            <div class="color-name">灰米背景</div>
+            <div class="color-hex">#F7F5F3</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #292524;"></div>
+          <div class="color-info">
+            <div class="color-name">深暖灰</div>
+            <div class="color-hex">#292524</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #78716C;"></div>
+          <div class="color-info">
+            <div class="color-name">中性灰</div>
+            <div class="color-hex">#78716C</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #C2410C;"></div>
+          <div class="color-info">
+            <div class="color-name">陶土色</div>
+            <div class="color-hex">#C2410C</div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons">
+        <h4>特点</h4>
+        <ul>
+          <li>内敛优雅</li>
+          <li>适合文学内容</li>
+          <li>高级感强</li>
+          <li>可能略显沉闷</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 方案 D - 雾蓝灰 -->
+    <div class="scheme-card foggy">
+      <div class="scheme-header">方案 D - 雾蓝灰</div>
+      <div class="preview-area">
+        <div class="preview-title">川端康成的文学世界</div>
+        <div class="preview-text">
+          穿过县界长长的隧道，便是雪国。夜空下一片白茫茫。火车在信号所前停了下来。
+        </div>
+        <a href="#" class="preview-link">阅读更多</a>
+        <div style="margin-top: 16px;">
+          <span class="preview-btn">开始阅读</span>
+        </div>
+      </div>
+      <div class="color-grid">
+        <div class="color-item">
+          <div class="color-swatch" style="background: #B8C5D6;"></div>
+          <div class="color-info">
+            <div class="color-name">雾蓝背景</div>
+            <div class="color-hex">#B8C5D6</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #1E293B;"></div>
+          <div class="color-info">
+            <div class="color-name">深蓝文字</div>
+            <div class="color-hex">#1E293B</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #475569;"></div>
+          <div class="color-info">
+            <div class="color-name">石板灰</div>
+            <div class="color-hex">#475569</div>
+          </div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #3B82F6;"></div>
+          <div class="color-info">
+            <div class="color-name">天蓝强调</div>
+            <div class="color-hex">#3B82F6</div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons">
+        <h4>特点</h4>
+        <ul>
+          <li>清新冷静</li>
+          <li>适合冬季/雪国主题</li>
+          <li>与深色模式过渡自然</li>
+          <li>背景色较深，需调整对比</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

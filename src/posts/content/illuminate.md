@@ -8,10 +8,9 @@ category: 随笔
 tags:
   - 关于我
 excerpt: 把能烧毁的全然焚烬
-banner: "images/IMG_418.png"
+banner: "images/IMG_418.avif"
 readingTime: true
 ---
-
 # illuminate
 
 Hei~ there! Jliu Pureey. mediocre. labyrinth.
@@ -29,7 +28,3 @@ Hei~ there! Jliu Pureey. mediocre. labyrinth.
 To the happy few!
 
 料是青云更有味,长风振袂顿开闱.
-
----
-**创建时间**：2026年04月05日 13:21  
-**更新时间**：2026年04月05日 14:30

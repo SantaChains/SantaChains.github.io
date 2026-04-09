@@ -10,10 +10,9 @@ tags:
   - 日本文学
   - 三岛由纪夫
 excerpt: 美与毁灭的永恒对话，一个关于嫉妒、执念与解脱的黑暗寓言。
-banner: "images/person3.jpg"
+banner: "images/person3.avif"
 readingTime: true
 ---
-
 # 《金阁寺》
 
 **作者**：三岛由纪夫  
@@ -65,7 +64,3 @@ readingTime: true
 >[三岛由纪夫：超越时代的日本文化殉道者 \| Nippon.com](https://www.nippon.com/cn/japan-topics/b07212/)
 >三岛认为，文学作品应该表现一个时代，并偶尔提出异议，揭示一种新的历史图景。
 
-
----
-**创建时间**：2026年04月05日 14:05
-**更新时间**：2026年04月05日 14:05

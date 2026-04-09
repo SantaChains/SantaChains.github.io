@@ -166,6 +166,9 @@ export class FileSystemError extends DataAccessError {
 /** 文章目录路径 */
 export const POSTS_DIRECTORY = 'src/posts/content' as const;
 
+/** 草稿目录路径（静态构建时跳过） */
+export const DRAFTS_DIRECTORY = 'src/posts/drafts' as const;
+
 /** 默认缓存 TTL（5分钟） */
 export const DEFAULT_CACHE_TTL = 5 * 60 * 1000;
 

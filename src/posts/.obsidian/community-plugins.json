@@ -2,8 +2,10 @@
   "templater-obsidian",
   "obsidian-banners",
   "obsidian42-brat",
-  "obsidian-auto-link-title",
   "update-time-on-edit",
   "generate-timeline",
-  "albus-imagine"
+  "albus-imagine",
+  "dataview",
+  "consistent-attachments-and-links",
+  "obsidian-auto-plus"
 ]

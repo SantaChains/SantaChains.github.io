@@ -4,7 +4,7 @@
  * 职责：
  * 1. Markdown 转 HTML
  * 2. WikiLink 处理
- * 3. 代码高亮
+ * 3. 代码高亮 (Shiki)
  * 4. 内容后处理
  *
  * 依赖：数据层 (src/lib/data/)
@@ -12,8 +12,12 @@
 
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
-import remarkHtml from 'remark-html';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import remarkRehype from 'remark-rehype';
+import rehypeKatex from 'rehype-katex';
+import rehypeStringify from 'rehype-stringify';
+import { codeToHtml } from 'shiki';
 import type { PostMeta } from '@/lib/data/types';
 import { processContentImages } from '@/lib/data/posts';
 
@@ -45,6 +49,117 @@ export interface MarkdownProcessOptions {
 
 /** WikiLink 正则表达式 */
 const WIKI_LINK_REGEX = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+
+/** 代码块正则表达式 */
+const CODE_BLOCK_REGEX = /```(\w+)?\n([\s\S]*?)```/g;
+
+// ============================================
+// Shiki 代码高亮
+// ============================================
+
+/**
+ * 语言映射表 - 将常见别名映射到 Shiki 支持的语言
+ */
+const LANGUAGE_MAP: Record<string, string> = {
+  'cuda': 'cpp',        // CUDA 使用 C++ 高亮
+  'vue': 'html',        // Vue 使用 HTML 高亮
+  'shell': 'bash',      // Shell 使用 Bash 高亮
+  'zsh': 'bash',        // Zsh 使用 Bash 高亮
+  'sh': 'bash',         // Sh 使用 Bash 高亮
+  'py': 'python',       // Py 使用 Python 高亮
+  'js': 'javascript',   // JS 使用 JavaScript 高亮
+  'ts': 'typescript',   // TS 使用 TypeScript 高亮
+  'jsx': 'javascript',  // JSX 使用 JavaScript 高亮
+  'tsx': 'typescript',  // TSX 使用 TypeScript 高亮
+  'yml': 'yaml',        // YML 使用 YAML 高亮
+  'md': 'markdown',     // MD 使用 Markdown 高亮
+  'rb': 'ruby',         // RB 使用 Ruby 高亮
+  'go': 'go',           // Go 保持
+  'golang': 'go',       // Golang 映射到 Go
+  'rs': 'rust',         // RS 使用 Rust 高亮
+};
+
+/**
+ * 获取 Shiki 支持的语言标识
+ * @param lang 原始语言标识
+ * @returns 映射后的语言标识
+ */
+function getShikiLanguage(lang: string): string {
+  const normalizedLang = lang.toLowerCase().trim();
+  return LANGUAGE_MAP[normalizedLang] || normalizedLang;
+}
+
+/**
+ * 使用 Shiki 高亮代码块
+ * @param code 代码内容
+ * @param language 语言标识
+ * @returns 带高亮和复制功能的 HTML
+ */
+async function highlightCodeBlock(code: string, language?: string): Promise<string> {
+  const trimmedCode = code.trim();
+  const rawLang = language || 'text';
+  const displayLang = language || '';
+  const shikiLang = getShikiLanguage(rawLang);
+
+  try {
+    // 使用 Shiki 进行语法高亮 - 浅色模式使用 github-light
+    const highlightedHtml = await codeToHtml(trimmedCode, {
+      lang: shikiLang === 'text' ? 'plaintext' : shikiLang,
+      theme: 'github-light',
+    });
+
+    // 提取代码内容（用于行号计算）
+    const lines = trimmedCode.split('\n');
+    const lineCount = lines.length;
+
+    // 生成行号 HTML
+    const lineNumbersHtml = Array.from({ length: lineCount }, (_, i) =>
+      `<span class="line-number" aria-hidden="true">${i + 1}</span>`
+    ).join('\n');
+
+    // 使用 base64 编码存储原始代码 (使用 btoa 兼容浏览器环境)
+    const codeDataAttr = btoa(unescape(encodeURIComponent(trimmedCode)));
+
+    // 构建完整的代码块 HTML
+    return `
+      <div class="code-block-wrapper">
+        ${displayLang ? `<div class="code-language">${escapeHtml(displayLang)}</div>` : ''}
+        <div class="code-block-container">
+          <div class="line-numbers" aria-hidden="true">
+            ${lineNumbersHtml}
+          </div>
+          <div class="code-content">
+            ${highlightedHtml}
+          </div>
+        </div>
+        <button class="code-copy-btn" data-code="${codeDataAttr}" title="复制代码">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+          </svg>
+        </button>
+      </div>
+    `;
+  } catch (error) {
+    // Shiki 高亮失败时回退到普通代码块
+    console.warn(`[markdownService] Shiki 高亮失败 (${rawLang}):`, error);
+    const escapedCode = escapeHtml(trimmedCode);
+    const codeDataAttr = btoa(unescape(encodeURIComponent(trimmedCode)));
+
+    return `
+      <div class="code-block-wrapper">
+        ${displayLang ? `<div class="code-language">${escapeHtml(displayLang)}</div>` : ''}
+        <pre class="code-block"><code>${escapedCode}</code></pre>
+        <button class="code-copy-btn" data-code="${codeDataAttr}" title="复制代码">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+          </svg>
+        </button>
+      </div>
+    `;
+  }
+}
 
 // ============================================
 // WikiLink 处理
@@ -156,14 +271,50 @@ export async function markdownToHtml(
     processedMarkdown = processContentImages(markdown);
   }
 
+  // 提取并临时替换代码块 - 使用特殊 Unicode 标记避免被处理
+  const codeBlocks: Array<{ index: number; promise: Promise<string> }> = [];
+  let codeBlockIndex = 0;
+
+  processedMarkdown = processedMarkdown.replace(
+    CODE_BLOCK_REGEX,
+    (match, language, code) => {
+      codeBlocks.push({
+        index: codeBlockIndex,
+        promise: highlightCodeBlock(code, language),
+      });
+      // 使用特殊 Unicode 标记，不会被 Markdown 处理器处理
+      const placeholder = `⦅CODE_BLOCK_${codeBlockIndex}⦆`;
+      codeBlockIndex++;
+      return placeholder;
+    }
+  );
+
   try {
+    // 使用 unified 处理 Markdown
+    // Pipeline: Markdown AST -> HTML AST -> HTML string
     const result = await unified()
       .use(remarkParse)
+      .use(remarkMath)
       .use(remarkGfm)
-      .use(remarkHtml, { allowDangerousHtml })
+      .use(remarkRehype, { allowDangerousHtml })
+      .use(rehypeKatex, {
+        strict: false,
+        throwOnError: false,
+        errorColor: '#cc0000',
+      })
+      .use(rehypeStringify, { allowDangerousHtml })
       .process(processedMarkdown);
 
-    return result.toString();
+    let html = result.toString();
+
+    // 恢复代码块（替换占位符为高亮后的 HTML）
+    for (const { index, promise } of codeBlocks) {
+      const highlightedCode = await promise;
+      const placeholder = `⦅CODE_BLOCK_${index}⦆`;
+      html = html.replace(placeholder, highlightedCode);
+    }
+
+    return html;
   } catch (error) {
     console.error('[markdownService] Markdown 转 HTML 失败:', error);
     // 回退：返回转义后的原始内容
@@ -179,19 +330,42 @@ export async function markdownToHtml(
 export function processMarkdown(content: string): string {
   let html = content;
 
-  // 处理代码块 - 添加复制按钮容器
+  // 处理代码块 - 使用简化版本（无高亮）
   html = html.replace(
-    /```(\w+)?\n([\s\S]*?)```/g,
+    CODE_BLOCK_REGEX,
     (match, language, code) => {
       const trimmedCode = code.trim();
       const lang = language ? escapeHtml(language) : '';
       const escapedCode = escapeHtml(trimmedCode);
       const langLabel = lang ? `<div class="code-language">${lang}</div>` : '';
-      // 使用 base64 编码存储原始代码，避免特殊字符问题
-      const codeDataAttr = typeof window !== 'undefined'
-        ? btoa(unescape(encodeURIComponent(trimmedCode)))
-        : Buffer.from(trimmedCode).toString('base64');
-      return `<div class="code-block-wrapper">${langLabel}<pre class="code-block"><code>${escapedCode}</code></pre><button class="code-copy-btn" data-code="${codeDataAttr}" title="复制代码"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></div>`;
+      const codeDataAttr = btoa(unescape(encodeURIComponent(trimmedCode)));
+
+      // 计算行号
+      const lines = trimmedCode.split('\n');
+      const lineCount = lines.length;
+      const lineNumbersHtml = Array.from({ length: lineCount }, (_, i) =>
+        `<span class="line-number" aria-hidden="true">${i + 1}</span>`
+      ).join('\n');
+
+      return `
+        <div class="code-block-wrapper">
+          ${langLabel}
+          <div class="code-block-container">
+            <div class="line-numbers" aria-hidden="true">
+              ${lineNumbersHtml}
+            </div>
+            <div class="code-content">
+              <pre class="code-block"><code>${escapedCode}</code></pre>
+            </div>
+          </div>
+          <button class="code-copy-btn" data-code="${codeDataAttr}" title="复制代码">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+          </button>
+        </div>
+      `;
     }
   );
 

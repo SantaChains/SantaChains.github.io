@@ -125,13 +125,14 @@ export function Footer() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <p className="text-sm text-muted-foreground flex items-center gap-1">
-            © {currentYear} SantaChains. Made with 
+            © {currentYear} <strong>SantaChains</strong>. Made with
             <motion.span
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
             >
               <Heart className="w-3 h-3 text-red-500 fill-red-500" />
             </motion.span>
+            by SantaChains
           </p>
           <p className="text-sm text-muted-foreground">
             Built with{' '}

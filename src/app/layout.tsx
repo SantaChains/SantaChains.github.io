@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "katex/dist/katex.min.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -7,6 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 export const metadata: Metadata = {
   title: "SantaChains Blog",
   description: "在川端康成的雪国里，每一粒雪晶都是未完成的诗篇",
+  authors: [{ name: "SantaChains" }],
   metadataBase: new URL('https://santachains.github.io'),
   icons: {
     icon: [
@@ -66,9 +68,9 @@ export default function RootLayout({
  * - default-src 'self': 仅允许同源资源
  * - script-src 'self' 'unsafe-inline' 'unsafe-eval': 允许同源脚本 + 内联脚本（Next.js需要）
  * - style-src 'self' 'unsafe-inline' https://fonts.googleapis.com: 允许内联样式 + Google字体
- * - font-src 'self' https://fonts.gstatic.com: 允许 Google 字体
- * - img-src 'self' data: blob: https://img.shields.io: 允许图片（本地 + SVG badge + data URLs）
- * - connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com: 允许字体API连接
+ * - font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net: 允许 Google 字体 + KaTeX 字体
+ * - img-src 'self' data: blob: https://img.shields.io https://img.yoqi.me: 允许图片（本地 + SVG badge + data URLs）
+ * - connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net: 允许字体API连接
  * - frame-ancestors 'none': 禁止被嵌入iframe
  * - base-uri 'self': 限制 base 标签源
  * - form-action 'self': 限制表单提交流向
@@ -78,20 +80,20 @@ function buildCSP(): string {
     // 默认仅允许同源
     "default-src 'self'",
 
-    // 脚本：同源 + 内联（Next.js需要）+ unsafe-eval（开发用）
+    // 脚本：同源 + 内联（Next.js需要）+ unsafe-eval（Shiki代码高亮需要）
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
 
     // 样式：同源 + 内联 + Google Fonts
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
 
-    // 字体：本地 + Google Fonts
-    "font-src 'self' https://fonts.gstatic.com",
+    // 字体：本地 + Google Fonts + KaTeX CDN
+    "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
 
     // 图片：本地 + data URLs + badge图标
     "img-src 'self' data: blob: https://img.shields.io https://img.yoqi.me",
 
-    // 连接：字体API
-    "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
+    // 连接：字体API + KaTeX CDN
+    "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net",
 
     // 禁止被嵌入
     "frame-ancestors 'none'",

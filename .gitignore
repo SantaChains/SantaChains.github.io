@@ -43,8 +43,7 @@ next-env.d.ts
 # IDE - VS Code Local History
 .history/
 .trae/
-.vscode/settings.json
-.vscode/launch.json
+.vscode/
 
 # GitHub Actions 临时文件
 .github/workflows/*.bak
@@ -74,4 +73,25 @@ package.json.bak
 
 # Obsidian - 只保留配置，忽略个人状态
 .obsidian/
-.vscode/
+
+
+__pycache__/
+
+# Windows 系统文件
+Thumbs.db
+desktop.ini
+Desktop.ini
+
+# 临时文件
+*.tmp
+*.temp
+*~
+
+# 编辑器交换文件
+*.swp
+*.swo
+*._*
+
+# macOS 系统文件
+.AppleDouble
+.LSOverride

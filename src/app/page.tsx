@@ -34,7 +34,7 @@ function QuoteCardSkeleton() {
 const quotes = [
   {
     text: "在川端康成的雪国里，每一粒雪晶都是未完成的诗篇",
-    source: "SantaChains",
+    source: "作者：SantaChains",
     detail: "灵感来源于川端康成《雪国》的虚无之美，以及三岛由纪夫《金阁寺》中对极致美的毁灭性追求。"
   },
   {

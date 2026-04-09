@@ -1,17 +1,6 @@
 ---
-title: RUST核心特色
-slug: rust
-created: 2026-04-06T22:30
-updated: 2026-04-06T22:30
-draft: false
-category: 技术
-tags:
-  - rust
-excerpt: 总结rust最核心的属性,并思考使用方向
-banner: images/rust.png
-readingTime: true
+banner: "images/rust.avif"
 ---
-
 # RUST核心特色
 
 ## 背景
@@ -304,7 +293,3 @@ Rust 的核心特色可以概括为:
 - [The Rust Programming Language Book](https://doc.rust-lang.org/book/)
 - [Rust by Example](https://doc.rust-lang.org/rust-by-example/)
 - [Rust 内存安全核心机制详解](https://www.7claw.com/2826997.html)
-
----
-**创建时间**: 2026年04月06日 22:30
-**更新时间**: 2026年04月06日 22:30
