@@ -21,9 +21,6 @@ import { codeToHtml } from 'shiki';
 import type { PostMeta } from '@/lib/data/types';
 import { processContentImages } from '@/lib/data/posts';
 
-// GitHub Pages 项目站点的 basePath
-const BASE_PATH = '/SantaChains.github.io';
-
 // ============================================
 // 类型定义
 // ============================================
@@ -217,10 +214,10 @@ export function transformWikiLinksToHtml(content: string, posts: PostMeta[]): st
     }
 
     if (exists && finalSlug) {
-      return `<a href="${BASE_PATH}/posts/${escapeHtml(encodeURIComponent(finalSlug))}" class="wikilink">${linkText}</a>`;
+      return `<a href="/posts/${escapeHtml(encodeURIComponent(finalSlug))}" class="wikilink">${linkText}</a>`;
     }
 
-    return `<a href="${BASE_PATH}/posts/${escapeHtml(encodeURIComponent(targetSlug))}" class="wikilink wikilink-missing">${linkText}</a>`;
+    return `<a href="/posts/${escapeHtml(encodeURIComponent(targetSlug))}" class="wikilink wikilink-missing">${linkText}</a>`;
   });
 }
 
@@ -242,7 +239,7 @@ export function processObsidianLinks(content: string, posts: PostMeta[]): string
     const slug = titleToSlug.get(slugify(link)) || titleToSlug.get(slugify(link.replace(/\.md$/, '')));
 
     if (slug) {
-      return `[${linkText}](${BASE_PATH}/posts/${escapeHtml(encodeURIComponent(slug))})`;
+      return `[${linkText}](/posts/${escapeHtml(encodeURIComponent(slug))})`;
     }
 
     return linkText;
@@ -266,12 +263,20 @@ export async function markdownToHtml(
   const {
     allowDangerousHtml = true,
     processImages = true,
+    processWikiLinks = true,
   } = options;
 
   // 预处理图片路径
   let processedMarkdown = markdown;
   if (processImages) {
     processedMarkdown = processContentImages(markdown);
+  }
+
+  // 预处理 WikiLinks - 在 Markdown 转 HTML 之前处理，更加可靠
+  if (processWikiLinks) {
+    const { getAllPostMetas } = await import('@/lib/data/posts');
+    const posts = getAllPostMetas();
+    processedMarkdown = processObsidianLinks(processedMarkdown, posts);
   }
 
   // 提取并临时替换代码块 - 使用 HTML 注释标记避免被 Markdown 处理器处理

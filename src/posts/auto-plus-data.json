@@ -1,0 +1,93 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "rule_1775830469030_eom8nwg",
+      "name": "草稿",
+      "description": "",
+      "enabled": true,
+      "priority": 0,
+      "trigger": {
+        "manual": true,
+        "auto": {
+          "enabled": false,
+          "events": [
+            "create",
+            "modify"
+          ]
+        },
+        "cron": {
+          "enabled": false,
+          "expressions": [],
+          "runOnStartup": false
+        }
+      },
+      "source": {
+        "include": [
+          {
+            "type": "folder",
+            "path": "drafts",
+            "recursive": false
+          }
+        ],
+        "exclude": []
+      },
+      "conditions": {
+        "logic": "AND",
+        "groups": [
+          {
+            "logic": "AND",
+            "conditions": [
+              {
+                "field": "title",
+                "operator": "contains",
+                "value": "",
+                "valueType": "string"
+              },
+              {
+                "field": "title",
+                "operator": "contains",
+                "value": "",
+                "valueType": "string"
+              }
+            ]
+          }
+        ]
+      },
+      "actionIds": [
+        "action_1775830436831_6o3j7xm"
+      ],
+      "allowMultipleActions": false,
+      "errorHandling": {
+        "strategy": "stop",
+        "maxRetries": 3,
+        "retryDelay": 1000,
+        "rollbackOnFailure": false
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "action_1775830436831_6o3j7xm",
+      "name": "移动",
+      "type": "file.move",
+      "params": {
+        "targetPath": "content"
+      },
+      "enabled": true
+    }
+  ],
+  "templates": [],
+  "settings": {
+    "language": "zh",
+    "logEnabled": true,
+    "logRetention": {
+      "maxFiles": 30,
+      "maxDays": 7
+    },
+    "deleteMode": "trash",
+    "concurrentMode": "sequential",
+    "dryRunEnabled": false,
+    "showBatchProgress": true
+  }
+}

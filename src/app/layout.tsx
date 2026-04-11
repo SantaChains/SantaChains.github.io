@@ -10,15 +10,6 @@ export const metadata: Metadata = {
   description: "在川端康成的雪国里，每一粒雪晶都是未完成的诗篇",
   authors: [{ name: "SantaChains" }],
   metadataBase: new URL('https://santachains.github.io'),
-  icons: {
-    icon: [
-      { url: '/icons/favicon.ico', sizes: '32x32' },
-      { url: '/icons/favicon-192.png', sizes: '192x192' },
-    ],
-    apple: [
-      { url: '/icons/apple-touch-icon.png', sizes: '180x180' },
-    ],
-  },
 };
 
 export default function RootLayout({
@@ -29,8 +20,6 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
-        {/* Web App Manifest */}
-        <link rel="manifest" href="/icons/site.webmanifest" />
         {/* Content Security Policy */}
         <meta
           httpEquiv="Content-Security-Policy"
@@ -44,9 +33,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        {/* 预加载关键字体文件 */}
-        <link rel="preload" href="/fonts/Arima-Regular.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
-        <link rel="preload" href="/fonts/LXGWWenKaiMono.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <ThemeProvider defaultTheme="system" storageKey="santachains-theme">
@@ -86,13 +72,13 @@ function buildCSP(): string {
     // 样式：同源 + 内联 + Google Fonts
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
 
-    // 字体：本地 + Google Fonts + KaTeX CDN
+    // 字体：同源 + Google Fonts + KaTeX CDN
     "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
 
-    // 图片：本地 + data URLs + badge图标
+    // 图片：同源 + data URLs + badge图标
     "img-src 'self' data: blob: https://img.shields.io https://img.yoqi.me",
 
-    // 连接：字体API + KaTeX CDN
+    // 连接：同源 + 字体API + KaTeX CDN
     "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net",
 
     // 禁止被嵌入

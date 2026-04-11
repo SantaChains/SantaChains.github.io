@@ -26,7 +26,6 @@ import {
   formatDate,
   getWebBannerPath,
   markdownToHtml,
-  transformWikiLinksToHtml,
 } from '@/lib/services';
 
 import type { Post } from '@/lib/data/types';
@@ -47,15 +46,12 @@ interface PostPageProps {
 
 /**
  * 生成所有静态路径
- * 注意：静态导出时需要使用文件名（fileName）而非 slug
- * 因为 URL 路径是基于文件名的，这样可以避免 slug 与文件名不一致的问题
+ * 使用 slug 作为 URL 路径，getPostBySlug 会自动处理 slug 到文件名的映射
  */
 export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
   const posts = getAllPostMetas();
   return posts.map((post) => ({
-    // 使用实际文件名（不含扩展名）作为 URL 路径
-    // 这确保了 URL 与生成的文件名一致
-    slug: encodeURIComponent(post.fileName || post.slug),
+    slug: encodeURIComponent(post.slug),
   }));
 }
 
@@ -259,14 +255,11 @@ export default async function PostPage({ params }: PostPageProps) {
   // 获取相邻文章
   const { prev, next } = getAdjacentPosts(slug);
 
-  // 获取所有文章用于 WikiLink 解析
-  const allPosts = getAllPostMetas();
-
-  // 转换 Markdown 为 HTML
-  const htmlContent = await markdownToHtml(post.content);
-
-  // 转换 WikiLinks 为 HTML 链接
-  const processedContent = transformWikiLinksToHtml(htmlContent, allPosts);
+  // 转换 Markdown 为 HTML（WikiLinks 在内部自动处理）
+  const processedContent = await markdownToHtml(post.content, {
+    processImages: true,
+    processWikiLinks: true,
+  });
 
   return (
     <div className="min-h-screen relative overflow-hidden">

@@ -95,3 +95,6 @@ Desktop.ini
 # macOS 系统文件
 .AppleDouble
 .LSOverride
+
+# OpenMemory - IDE/Assistant specific rules
+CLAUDE.md

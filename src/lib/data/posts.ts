@@ -105,22 +105,31 @@ let imagePathMap: Map<string, string> | null = null;
 /**
  * 构建图片文件名到完整路径的映射
  * 扫描 images 目录及其子目录，建立文件名索引
+ * 优先扫描 public/posts/images（构建后），回退到 src/posts/images（开发模式）
  */
 function buildImagePathMap(): Map<string, string> {
   const map = new Map<string, string>();
-  const imagesDir = path.join(process.cwd(), 'public', 'posts', 'images');
-  
-  if (!fs.existsSync(imagesDir)) {
+
+  // 优先使用 public 目录（构建后或 prebuild 后）
+  const publicImagesDir = path.join(process.cwd(), 'public', 'posts', 'images');
+  // 回退到 src 目录（开发模式）
+  const srcImagesDir = path.join(process.cwd(), 'src', 'posts', 'images');
+
+  // 选择存在的目录
+  const imagesDir = fs.existsSync(publicImagesDir) ? publicImagesDir :
+                    fs.existsSync(srcImagesDir) ? srcImagesDir : null;
+
+  if (!imagesDir) {
     return map;
   }
 
   function scanDirectory(dir: string, relativePath: string = '') {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
       const entryRelativePath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
-      
+
       if (entry.isDirectory()) {
         scanDirectory(fullPath, entryRelativePath);
       } else if (entry.isFile()) {

@@ -43,6 +43,9 @@ export function PostContent({ htmlContent, className = '' }: PostContentProps) {
 
     const container = containerRef.current;
 
+    // 检查是否在浏览器环境（防止 SSR 问题）
+    if (typeof window === 'undefined') return;
+
     // 设置图片淡入效果
     const images = container.querySelectorAll('img.markdown-image');
     images.forEach((img) => {
@@ -100,7 +103,26 @@ export function PostContent({ htmlContent, className = '' }: PostContentProps) {
 
       const handleCopy = async () => {
         try {
-          await navigator.clipboard.writeText(code);
+          // 优先使用现代 Clipboard API
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(code);
+          } else {
+            // 降级方案：使用传统方法（适用于 HTTP 环境）
+            const textArea = document.createElement('textarea');
+            textArea.value = code;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            textArea.style.top = '0';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            if (!successful) {
+              throw new Error('execCommand copy failed');
+            }
+          }
+
           button.classList.add('copied');
           button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
           button.title = '已复制';
@@ -112,6 +134,7 @@ export function PostContent({ htmlContent, className = '' }: PostContentProps) {
           }, 2000);
         } catch (err) {
           console.error('复制失败:', err);
+          button.title = '复制失败';
         }
       };
 
